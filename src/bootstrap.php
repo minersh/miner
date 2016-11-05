@@ -6,6 +6,8 @@
  * @see LICENSE.txt
  */
 
+require __DIR__ . "/../vendor/autoload.php";
+
 use Symfony\Component\Console\Application;
 use Symfony\Component\Yaml\Yaml;
 use Pimple\Container;

@@ -21,7 +21,7 @@ class SetupService
     public function installHomeDir(string $homeDir)
     {
         if (!file_exists($homeDir)) {
-            if (!mkdir($homeDir, 0700, true)) {
+            if (!@mkdir($homeDir, 0700, true)) {
                 throw SetupException::installationFailed(
                     sprintf(
                         "Can't create home directory %s",

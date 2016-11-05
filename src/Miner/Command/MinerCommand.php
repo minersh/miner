@@ -58,7 +58,7 @@ abstract class MinerCommand extends Command
     {
         $this->homeDir = $input->getOption(self::OPT_HOMEDIR);
         if (empty($this->homeDir)) {
-            $this->homeDir = trim(`cd && pwd`) . '/.miner';
+            $this->homeDir = $this->getFallbackHomeDir();
         }
 
         $output->writeln(
@@ -70,5 +70,13 @@ abstract class MinerCommand extends Command
         );
 
         return 0;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFallbackHomeDir()
+    {
+        return trim(`cd && pwd`) . '/.miner';
     }
 }
