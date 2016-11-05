@@ -9,10 +9,5 @@
 
 require __DIR__ . "/../vendor/autoload.php";
 
-use Symfony\Component\Console\Application;
-
-$app = new Application();
-
-// ... register commands
-
+$app = require __DIR__ . "/../src/bootstrap.php";
 $app->run();
