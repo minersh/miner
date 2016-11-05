@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="miner" default="list">
+
+    <!-- ============================================  -->
+    <!-- Targets: list all targets                      -->
+    <!-- ============================================  -->
+    <target name="list" description="Displays all available targets.">
+        <exec command="./vendor/bin/phing -list" passthru="true"/>
+    </target>
+
+</project>

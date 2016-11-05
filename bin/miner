@@ -1,0 +1,18 @@
+#!/usr/bin/env php
+<?php
+/**
+ * This file is part of the miner project.
+ *
+ * @copyright Copyright (c) 2016 by Simon Schröer <http://schroeer.me>
+ * @see LICENSE.txt
+ */
+
+require __DIR__ . "/../vendor/autoload.php";
+
+use Symfony\Component\Console\Application;
+
+$app = new Application();
+
+// ... register commands
+
+$app->run();

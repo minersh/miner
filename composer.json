@@ -1,0 +1,25 @@
+{
+  "name": "sweikenb/miner",
+  "description": "Command Line Tool For Redmine",
+  "type": "project",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Simon Schröer",
+      "email": "code@sweikenb.com"
+    }
+  ],
+  "minimum-stability": "stable",
+  "require": {
+    "php": ">=7.0.6",
+    "symfony/console": "^3.1"
+  },
+  "require-dev": {
+    "phing/phing": "2.*"
+  },
+  "autoload": {
+    "psr-0": {
+      "": "src/"
+    }
+  }
+}
