@@ -7,34 +7,11 @@
  */
 
 require __DIR__ . "/../vendor/autoload.php";
+require __DIR__ . "/functions.php";
 
 use Symfony\Component\Console\Application;
 use Symfony\Component\Yaml\Yaml;
 use Pimple\Container;
-
-/**
- * @param array $rawArguments
- * @param Container $diContainer
- *
- * @return array
- */
-function resolveDiArguments(array $rawArguments, Container $diContainer)
-{
-    $arguments = [];
-    if (!empty($rawArguments)) {
-        foreach ($rawArguments as $argument) {
-            if (
-                !is_array($argument)
-                && !empty($argument)
-                && '@' === (string)$argument[0]
-            ) {
-                $argument = $diContainer[substr($argument, 1)];
-            }
-            $arguments[] = $argument;
-        }
-    }
-    return $arguments;
-}
 
 /*
  * Configure DI
