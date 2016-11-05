@@ -1,0 +1,3 @@
+commands:
+  "Miner\\Command\\Core\\SetupCommand":
+    - "@miner.core.setup"

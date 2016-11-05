@@ -8,4 +8,8 @@
         <exec command="./vendor/bin/phing -list" passthru="true"/>
     </target>
 
+    <target name="qa:run" description="Runs all QA targets">
+        <exec command="./vendor/bin/phpunit -c phpunit.xml.dist" passthru="true" checkreturn="true"/>
+    </target>
+
 </project>
