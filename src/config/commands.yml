@@ -1,3 +1,6 @@
 commands:
   "Miner\\Command\\Core\\SetupCommand":
     - "@miner.core.setup"
+
+  "Miner\\Command\\Auth\\LoginCommand":
+    - "@miner.auth.service"

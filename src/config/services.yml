@@ -1,5 +1,34 @@
 services:
+  #
+  # Core-Services
+  #
   miner.core.setup:
     class: "Miner\\Service\\Core\\SetupService"
-#    arguments:
-#      - ""
+
+  miner.core.environment:
+    class: "Miner\\Service\\Core\\EnvironmentService"
+    arguments:
+      - "@miner.core.setup"
+
+  #
+  # Services
+  #
+  miner.auth.service:
+    class: "Miner\\Service\\Auth\\AuthService"
+    arguments:
+      - "@miner.core.environment"
+      - "@miner.registry.user"
+
+  #
+  # Factories
+  #
+  miner.factory.user:
+    class: "Miner\\Factory\\UserFactory"
+
+  #
+  # Registries
+  #
+  miner.registry.user:
+    class: "Miner\\Registry\\User\\UserRegistry"
+    arguments:
+      - "@miner.factory.user"
