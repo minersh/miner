@@ -8,21 +8,45 @@
 
 namespace Miner\Service\Core;
 
+use Miner\Exceptions\EnvironmentException;
+
 class EnvironmentService
 {
     /**
-     * @var SetupService
+     * @var string
      */
-    private $setupService;
+    private $homedirPreference;
 
     /**
-     * AuthService constructor.
+     * @param string $homedirPreference
      *
-     * @param SetupService $setupService
+     * @return $this
      */
-    public function __construct(SetupService $setupService)
+    public function setHomedirPreference(string $homedirPreference)
     {
-        $this->setupService = $setupService;
+        $this->homedirPreference = $homedirPreference;
+        return $this;
+    }
+
+    /**
+     * @return string
+     * @throws EnvironmentException
+     */
+    public function getHomedir()
+    {
+        if (empty($this->homedirPreference)) {
+            throw EnvironmentException::missingHomedirConfiguration();
+        }
+        return $this->homedirPreference;
+    }
+
+    /**
+     * @return string
+     * @codeCoverageIgnore
+     */
+    public function getFallbackHomeDir()
+    {
+        return trim(`cd && pwd`) . '/.miner';
     }
 
     /**

@@ -48,10 +48,16 @@ foreach ($commandData['commands'] as $commandClass => $commandArgs) {
 
     $reflector = new ReflectionClass($commandClass);
     if ($reflector->getConstructor() && !empty($arguments)) {
-        $commandList[] = $reflector->newInstanceArgs($arguments);
+        $instance = $reflector->newInstanceArgs($arguments);
     } else {
-        $commandList[] = $reflector->newInstance();
+        $instance = $reflector->newInstance();
     }
+
+    if ($instance instanceof \Miner\Command\MinerCommand) {
+        $instance->setEnvironmentService($diContainer['miner.core.environment']);
+    }
+
+    $commandList[] = $instance;
 }
 
 /*

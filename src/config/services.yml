@@ -7,8 +7,6 @@ services:
 
   miner.core.environment:
     class: "Miner\\Service\\Core\\EnvironmentService"
-    arguments:
-      - "@miner.core.setup"
 
   #
   # Services

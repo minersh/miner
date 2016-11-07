@@ -8,6 +8,7 @@
 
 namespace Miner\Command;
 
+use Miner\Service\Core\EnvironmentService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -18,9 +19,9 @@ abstract class MinerCommand extends Command
     const OPT_HOMEDIR = 'home';
 
     /**
-     * @var string
+     * @var EnvironmentService
      */
-    private $homeDir;
+    private $environmentService;
 
     /**
      * MinerCommand constructor.
@@ -41,11 +42,19 @@ abstract class MinerCommand extends Command
     }
 
     /**
+     * @param EnvironmentService $environmentService
+     */
+    public function setEnvironmentService(EnvironmentService $environmentService)
+    {
+        $this->environmentService = $environmentService;
+    }
+
+    /**
      * @return string
      */
     protected function getHomeDir(): string
     {
-        return $this->homeDir;
+        return $this->environmentService->getHomedir();
     }
 
     /**
@@ -56,27 +65,29 @@ abstract class MinerCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->homeDir = $input->getOption(self::OPT_HOMEDIR);
-        if (empty($this->homeDir)) {
-            $this->homeDir = $this->getFallbackHomeDir();
+        $this->registerHomeDir($input, $output);
+        return 0;
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     */
+    private function registerHomeDir(InputInterface $input, OutputInterface $output)
+    {
+        $homeDir = $input->getOption(self::OPT_HOMEDIR);
+        if (empty($homeDir)) {
+            $homeDir = $this->environmentService->getFallbackHomeDir();
         }
 
         $output->writeln(
             sprintf(
                 "[!] Using Home dir: <info>%s</info>",
-                $this->homeDir
+                $homeDir
             ),
             OutputInterface::VERBOSITY_VERBOSE
         );
 
-        return 0;
-    }
-
-    /**
-     * @return string
-     */
-    public function getFallbackHomeDir()
-    {
-        return trim(`cd && pwd`) . '/.miner';
+        $this->environmentService->setHomedirPreference($homeDir);
     }
 }

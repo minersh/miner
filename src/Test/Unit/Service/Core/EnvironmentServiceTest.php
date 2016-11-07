@@ -8,6 +8,7 @@
 
 namespace Test\Unit\Service\Core;
 
+use Miner\Exceptions\EnvironmentException;
 use Miner\Service\Core\EnvironmentService;
 use Miner\Service\Core\SetupService;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
@@ -41,5 +42,19 @@ class EnvironmentServiceTest extends \PHPUnit_Framework_TestCase
     public function testGetUserData()
     {
         $this->assertNull($this->service->getUserData());
+    }
+
+    public function testGetHomedir()
+    {
+        $dir = '/tmp/home-preference';
+        $this->service->setHomedirPreference($dir);
+        $this->assertEquals($dir, $this->service->getHomedir());
+    }
+
+    public function testGetHomedirError()
+    {
+        $this->expectException(EnvironmentException::class);
+        $this->expectExceptionMessage(EnvironmentException::missingHomedirConfiguration()->getMessage());
+        $this->service->getHomedir();
     }
 }

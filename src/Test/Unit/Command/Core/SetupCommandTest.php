@@ -14,6 +14,7 @@ use Miner\Service\Core\SetupService;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Test\Unit\Command\HelperTrait;
 
 /**
  * Class SetupCommandTest
@@ -23,6 +24,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class SetupCommandTest extends \PHPUnit_Framework_TestCase
 {
+    use HelperTrait;
+
     /**
      * @return array
      */
@@ -48,14 +51,26 @@ class SetupCommandTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         /* @var Mock|SetupService $setupServiceMock */
 
-        $cmd = new SetupCommand($setupServiceMock);
+        $cmd = $this->prepareCommand(new SetupCommand($setupServiceMock), ['getFallbackHomeDir', 'getHomedir']);
 
-        $expectedDir = $testHomeDir ?: $cmd->getFallbackHomeDir();
+        $fallbackDir = '/tmp/miner-fallback-dir';
+        $expectedDir = $testHomeDir ?: $fallbackDir;
+
+        $this->environmentServiceMock
+            ->expects($this->any())
+            ->method('getFallbackHomeDir')
+            ->willReturn($fallbackDir);
+
+        $this->environmentServiceMock
+            ->expects($this->any())
+            ->method('getHomedir')
+            ->willReturn($expectedDir);
 
         $setupServiceMock
             ->expects($expectFullInstall ? $this->once() : $this->any())
             ->method('installHomeDir')
-            ->with($this->equalTo($expectedDir));
+            ->with($this->equalTo($expectedDir))
+            ->willReturn($testHomeDir);
 
         $inputMock = $this->getMockBuilder(InputInterface::class)
             ->getMock();
@@ -88,6 +103,5 @@ class SetupCommandTest extends \PHPUnit_Framework_TestCase
         $exitCode = $method->invoke($cmd, $inputMock, $outputMock);
 
         $this->assertEquals(0, $exitCode);
-        $this->assertAttributeEquals($expectedDir, 'homeDir', $cmd);
     }
 }

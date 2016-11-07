@@ -13,6 +13,7 @@ use Miner\Service\Auth\AuthService;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Test\Unit\Command\HelperTrait;
 
 /**
  * Class LoginCommandTest
@@ -21,6 +22,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class LoginCommandTest extends \PHPUnit_Framework_TestCase
 {
+    use HelperTrait;
+
     /**
      * @var LoginCommand
      */
@@ -37,7 +40,7 @@ class LoginCommandTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->command = new LoginCommand($this->authServiceMock);
+        $this->command = $this->prepareCommand(new LoginCommand($this->authServiceMock));
     }
 
     public function executeDataProvider()
@@ -121,14 +124,13 @@ class LoginCommandTest extends \PHPUnit_Framework_TestCase
                             $this->equalTo($password)
                         )
                         ->willReturn($loginSuccess);
-                }
-                else {
+                } else {
                     $exptectedReturnCode = 1;
                 }
             }
         }
 
-        if(!$loginSuccess) {
+        if (!$loginSuccess) {
             $exptectedReturnCode = 1;
         }
 
