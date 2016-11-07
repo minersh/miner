@@ -39,8 +39,19 @@ class EnvironmentServiceTest extends \PHPUnit_Framework_TestCase
         $this->service = new EnvironmentService($this->setupServiceMock);
     }
 
-    public function testGetUserData()
+    public function testStoreGetUserData()
     {
+        $testdir = '/tmp';
+        $testdata = ['id' => 123, 'user' => 'name'];
+
+        $this->service->setHomedirPreference($testdir);
+        $this->service->storeUserData($testdata);
+        $this->assertEquals($testdata, $this->service->getUserData());
+    }
+
+    public function testGetUserDataEmpty()
+    {
+        $this->service->setHomedirPreference('/tmp/test-home-dir');
         $this->assertNull($this->service->getUserData());
     }
 

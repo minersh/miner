@@ -12,9 +12,15 @@ use Miner\Exceptions\AuthException;
 use Miner\Model\User\User;
 use Miner\Registry\User\UserRegistry;
 use Miner\Service\Core\EnvironmentService;
+use Miner\Service\Redmine\RedmineApi;
 
 class AuthService
 {
+    /**
+     * @var RedmineApi
+     */
+    private $redmineApi;
+
     /**
      * @var EnvironmentService
      */
@@ -26,15 +32,25 @@ class AuthService
     private $userRegistry;
 
     /**
+     * @var array|null
+     */
+    private $currentUser;
+
+    /**
      * AuthService constructor.
      *
+     * @param RedmineApi $redmineApi
      * @param EnvironmentService $environmentService
      * @param UserRegistry $userRegistry
      */
-    public function __construct(EnvironmentService $environmentService, UserRegistry $userRegistry)
-    {
+    public function __construct(
+        RedmineApi $redmineApi,
+        EnvironmentService $environmentService,
+        UserRegistry $userRegistry
+    ) {
         $this->environmentService = $environmentService;
         $this->userRegistry = $userRegistry;
+        $this->redmineApi = $redmineApi;
     }
 
     /**
@@ -43,34 +59,56 @@ class AuthService
      */
     public function getUser()
     {
-        $userdata = $this->environmentService->getUserData();
-        if (empty($userdata)) {
-            throw AuthException::noUserConfigured();
+        if (!$this->currentUser) {
+            $this->currentUser = $this->environmentService->getUserData();
+            if (empty($this->currentUser)) {
+                throw AuthException::noUserConfigured();
+            }
         }
 
-        return $this->userRegistry->getInstanceByData($userdata);
+        return $this->userRegistry->getInstanceByData($this->currentUser);
     }
 
     /**
+     * @param string $realmurl
      * @param string $apiToken
      *
      * @return bool
      */
-    public function loginWithToken(string $apiToken)
+    public function loginWithToken(string $realmurl, string $apiToken)
     {
-        // TODO
-        return false;
+        $userdata = $this->redmineApi->createClientContextByToken($realmurl, $apiToken)
+            ->getAuthApi()
+            ->login();
+
+        if (!$userdata || empty($userdata['user'])) {
+            return false;
+        }
+
+        $this->environmentService->storeUserData($userdata['user']);
+
+        return true;
     }
 
     /**
+     * @param string $realmurl
      * @param string $username
      * @param string $password
      *
      * @return bool
      */
-    public function loginWithCredentials(string $username, string $password)
+    public function loginWithCredentials(string $realmurl, string $username, string $password)
     {
-        // TODO
-        return false;
+        $userdata = $this->redmineApi->createClientContextByCredentials($realmurl, $username, $password)
+            ->getAuthApi()
+            ->login();
+
+        if (!$userdata || !isset($userdata['user']) || !is_array($userdata['user'])) {
+            return false;
+        }
+
+        $this->environmentService->storeUserData($userdata['user']);
+
+        return true;
     }
 }

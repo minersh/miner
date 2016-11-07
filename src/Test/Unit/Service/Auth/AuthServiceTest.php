@@ -12,6 +12,8 @@ use Miner\Exceptions\AuthException;
 use Miner\Registry\User\UserRegistry;
 use Miner\Service\Auth\AuthService;
 use Miner\Service\Core\EnvironmentService;
+use Miner\Service\Redmine\Auth\RedmineAuthApi;
+use Miner\Service\Redmine\RedmineApi;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
 
 /**
@@ -27,6 +29,11 @@ class AuthServiceTest extends \PHPUnit_Framework_TestCase
     private $service;
 
     /**
+     * @var Mock|RedmineApi
+     */
+    private $redmineApiMock;
+
+    /**
      * @var Mock|EnvironmentService
      */
     private $environmentMock;
@@ -38,6 +45,10 @@ class AuthServiceTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
+        $this->redmineApiMock = $this->getMockBuilder(RedmineApi::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $this->environmentMock = $this->getMockBuilder(EnvironmentService::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -46,7 +57,11 @@ class AuthServiceTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->service = new AuthService($this->environmentMock, $this->userRegistryMock);
+        $this->service = new AuthService(
+            $this->redmineApiMock,
+            $this->environmentMock,
+            $this->userRegistryMock
+        );
     }
 
     public function testGetUser()
@@ -83,13 +98,111 @@ class AuthServiceTest extends \PHPUnit_Framework_TestCase
         $this->service->getUser();
     }
 
-    public function testLoginWithToken()
+    public function loginWithTokenProvider()
     {
-        $this->assertFalse($this->service->loginWithToken('token'));
+        return [
+            ['url', 'token', ['user' => ['id' => 123]]],
+            ['url', 'token', ['invalid array']],
+            ['url', 'token', []],
+            ['url', 'token', null]
+        ];
     }
 
-    public function testLoginWithCredentials()
+    /**
+     * @param $realmurl
+     * @param $apitoken
+     * @param $userdata
+     *
+     * @dataProvider loginWithTokenProvider
+     */
+    public function testLoginWithToken($realmurl, $apitoken, $userdata)
     {
-        $this->assertFalse($this->service->loginWithCredentials('user', 'pass'));
+        $authApiMock = $this->getMockBuilder(RedmineAuthApi::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $authApiMock
+            ->expects($this->once())
+            ->method('login')
+            ->willReturn($userdata);
+
+        $this->redmineApiMock
+            ->expects($this->once())
+            ->method('createClientContextByToken')
+            ->with(
+                $this->equalTo($realmurl),
+                $this->equalTo($apitoken)
+            )
+            ->willReturn($this->redmineApiMock);
+
+        $this->redmineApiMock
+            ->expects($this->once())
+            ->method('getAuthApi')
+            ->willReturn($authApiMock);
+
+        if (isset($userdata['user'])) {
+            $this->environmentMock
+                ->expects($this->once())
+                ->method('storeUserData')
+                ->with($this->equalTo($userdata['user']));
+            $this->assertTrue($this->service->loginWithToken($realmurl, $apitoken));
+        } else {
+            $this->assertFalse($this->service->loginWithToken($realmurl, $apitoken));
+        }
+    }
+
+    public function loginWithCredentialsProvider()
+    {
+        return [
+            ['url', 'user', 'pass', ['user' => ['id' => 123]]],
+            ['url', 'user', 'pass', ['invalid array']],
+            ['url', 'user', 'pass', []],
+            ['url', 'user', 'pass', null]
+        ];
+    }
+
+    /**
+     * @param $realmurl
+     * @param $username
+     * @param $password
+     * @param $userdata
+     *
+     * @dataProvider loginWithCredentialsProvider
+     */
+    public function testLoginWithCredentials($realmurl, $username, $password, $userdata)
+    {
+        $authApiMock = $this->getMockBuilder(RedmineAuthApi::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $authApiMock
+            ->expects($this->once())
+            ->method('login')
+            ->willReturn($userdata);
+
+        $this->redmineApiMock
+            ->expects($this->once())
+            ->method('createClientContextByCredentials')
+            ->with(
+                $this->equalTo($realmurl),
+                $this->equalTo($username),
+                $this->equalTo($password)
+            )
+            ->willReturn($this->redmineApiMock);
+
+        $this->redmineApiMock
+            ->expects($this->once())
+            ->method('getAuthApi')
+            ->willReturn($authApiMock);
+
+        if (isset($userdata['user'])) {
+            $this->environmentMock
+                ->expects($this->once())
+                ->method('storeUserData')
+                ->with($this->equalTo($userdata['user']));
+            $this->assertTrue($this->service->loginWithCredentials($realmurl, $username, $password));
+        } else {
+            $this->assertFalse($this->service->loginWithCredentials($realmurl, $username, $password));
+        }
     }
 }

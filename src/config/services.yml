@@ -14,8 +14,24 @@ services:
   miner.auth.service:
     class: "Miner\\Service\\Auth\\AuthService"
     arguments:
+      - "@miner.redmine.api"
       - "@miner.core.environment"
       - "@miner.registry.user"
+
+  #
+  # Redmine API
+  #
+  miner.redmine.api:
+    class: "Miner\\Service\\Redmine\\RedmineApi"
+    arguments:
+      - "@miner.redmine.api.auth"
+      - "@miner.redmine.api.user"
+
+  miner.redmine.api.auth:
+    class: "Miner\\Service\\Redmine\\Auth\\RedmineAuthApi"
+
+  miner.redmine.api.user:
+    class: "Miner\\Service\\Redmine\\User\\RedmineUserApi"
 
   #
   # Factories

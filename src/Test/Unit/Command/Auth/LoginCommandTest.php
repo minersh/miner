@@ -9,6 +9,7 @@
 namespace Test\Unit\Command\Auth;
 
 use Miner\Command\Auth\LoginCommand;
+use Miner\Model\User\User;
 use Miner\Service\Auth\AuthService;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
 use Symfony\Component\Console\Input\InputInterface;
@@ -46,24 +47,26 @@ class LoginCommandTest extends \PHPUnit_Framework_TestCase
     public function executeDataProvider()
     {
         return [
-            ['', '', '', false],
-            ['token', '', '', true],
-            ['', 'user', 'pass', true],
-            ['', 'user', '', true],
-            ['token', 'user', '', true],
-            ['token', 'user', 'pass', false]
+            ['', '', '', '', false],
+            ['example', 'token', '', '', false],
+            ['http://example.com', 'token', '', '', true],
+            ['http://example.com', '', 'user', 'pass', true],
+            ['http://example.com', '', 'user', '', false],
+            ['http://example.com', 'token', 'user', '', false],
+            ['http://example.com', 'token', 'user', 'pass', false]
         ];
     }
 
     /**
-     * @param string|null $apitoken
-     * @param string|null $username
-     * @param string|null $password
+     * @param string $realmurl
+     * @param string $apitoken
+     * @param string $username
+     * @param string $password
      * @param bool $loginSuccess
      *
      * @dataProvider executeDataProvider
      */
-    public function testExecute($apitoken, $username, $password, $loginSuccess)
+    public function testExecute($realmurl, $apitoken, $username, $password, $loginSuccess)
     {
         $exptectedReturnCode = 0;
 
@@ -71,14 +74,20 @@ class LoginCommandTest extends \PHPUnit_Framework_TestCase
             ->getMock();
 
         $inputMock
+            ->expects($this->once())
+            ->method('getArgument')
+            ->with($this->equalTo(LoginCommand::ARG_REALMURL))
+            ->willReturn($realmurl);
+
+        $inputMock
             ->expects($this->exactly(4))
             ->method('getOption')
             ->with(
                 $this->logicalOr(
                     $this->equalTo(LoginCommand::OPT_HOMEDIR),
-                    $this->equalTo(LoginCommand::ARG_APITOKEN),
-                    $this->equalTo(LoginCommand::ARG_USERNAME),
-                    $this->equalTo(LoginCommand::ARG_PASSWORD)
+                    $this->equalTo(LoginCommand::OPT_APITOKEN),
+                    $this->equalTo(LoginCommand::OPT_USERNAME),
+                    $this->equalTo(LoginCommand::OPT_PASSWORD)
                 )
             )
             ->willReturnCallback(
@@ -86,10 +95,10 @@ class LoginCommandTest extends \PHPUnit_Framework_TestCase
                     if (LoginCommand::OPT_HOMEDIR === $option) {
                         return null;
                     } else {
-                        if (LoginCommand::ARG_APITOKEN === $option) {
+                        if (LoginCommand::OPT_APITOKEN === $option) {
                             return $apitoken;
                         } else {
-                            if (LoginCommand::ARG_USERNAME === $option) {
+                            if (LoginCommand::OPT_USERNAME === $option) {
                                 return $username;
                             } else {
                                 return $password;
@@ -102,35 +111,56 @@ class LoginCommandTest extends \PHPUnit_Framework_TestCase
         $outputMock = $this->getMockBuilder(OutputInterface::class)
             ->getMock();
 
-        if (empty($apitoken) && empty($username) && empty($password)) {
-            $outputMock
-                ->expects($this->exactly(2))
-                ->method('writeln');
-            $exptectedReturnCode = 1;
-        } else {
-            if (!empty($apitoken) && empty($username) && empty($password)) {
-                $this->authServiceMock
-                    ->expects($this->once())
-                    ->method('loginWithToken')
-                    ->with($this->equalTo($apitoken))
-                    ->willReturn($loginSuccess);
+        if (filter_var($realmurl, FILTER_VALIDATE_URL)) {
+            if (empty($apitoken) && empty($username) && empty($password)) {
+                $outputMock
+                    ->expects($this->exactly(2))
+                    ->method('writeln');
+                $exptectedReturnCode = 1;
             } else {
-                if (empty($apitoken) && !empty($username) && !empty($password)) {
+                if (!empty($apitoken) && empty($username) && empty($password)) {
                     $this->authServiceMock
                         ->expects($this->once())
-                        ->method('loginWithCredentials')
+                        ->method('loginWithToken')
                         ->with(
-                            $this->equalTo($username),
-                            $this->equalTo($password)
+                            $this->equalTo($realmurl),
+                            $this->equalTo($apitoken)
                         )
                         ->willReturn($loginSuccess);
                 } else {
-                    $exptectedReturnCode = 1;
+                    if (empty($apitoken) && !empty($username) && !empty($password)) {
+                        $this->authServiceMock
+                            ->expects($this->once())
+                            ->method('loginWithCredentials')
+                            ->with(
+                                $this->equalTo($realmurl),
+                                $this->equalTo($username),
+                                $this->equalTo($password)
+                            )
+                            ->willReturn($loginSuccess);
+                    } else {
+                        $exptectedReturnCode = 1;
+                    }
                 }
             }
         }
 
-        if (!$loginSuccess) {
+        if ($loginSuccess) {
+            $userMock = $this->getMockBuilder(User::class)
+                ->disableOriginalConstructor()
+                ->setMethods(['getLogin'])
+                ->getMock();
+
+            $userMock
+                ->expects($this->once())
+                ->method('getLogin')
+                ->willReturn($username);
+
+            $this->authServiceMock
+                ->expects($this->once())
+                ->method('getUser')
+                ->willReturn($userMock);
+        } else {
             $exptectedReturnCode = 1;
         }
 

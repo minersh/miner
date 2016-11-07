@@ -4,8 +4,54 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "b66513ecbe2c14d118ea1e9cfcadc5b2",
+    "content-hash": "c377b66b27ebbf96ef35f47b09ef5c21",
     "packages": [
+        {
+            "name": "kbsali/redmine-api",
+            "version": "v1.5.11",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/kbsali/php-redmine-api.git",
+                "reference": "db56200bc99351415e23f88e82a4ac0bc723493e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/kbsali/php-redmine-api/zipball/db56200bc99351415e23f88e82a4ac0bc723493e",
+                "reference": "db56200bc99351415e23f88e82a4ac0bc723493e",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "php": ">=5.4"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Redmine": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kevin Saliou",
+                    "email": "kevin@saliou.name",
+                    "homepage": "http://kevin.saliou.name"
+                }
+            ],
+            "description": "Redmine API client",
+            "homepage": "https://github.com/kbsali/php-redmine-api",
+            "keywords": [
+                "api",
+                "redmine"
+            ],
+            "time": "2016-10-05T20:20:31+00:00"
+        },
         {
             "name": "pimple/pimple",
             "version": "v3.0.2",

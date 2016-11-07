@@ -4,3 +4,6 @@ commands:
 
   "Miner\\Command\\Auth\\LoginCommand":
     - "@miner.auth.service"
+
+  "Miner\\Command\\User\\CurrentUserCommand":
+    - "@miner.auth.service"
