@@ -21,6 +21,17 @@ services:
       - "@miner.auth.service"
 
   #
+  # Interactive Shell
+  #
+  miner.core.shell:
+    class: "Miner\\Shell\\MinerShell"
+    arguments:
+      - "@container"
+
+  miner.core.shell.output:
+    class: "Psy\\Output\\ShellOutput"
+
+  #
   # Services
   #
   miner.auth.service:

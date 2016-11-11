@@ -7,5 +7,7 @@
  * @see LICENSE.txt
  */
 
+define('MINER_VERSION', '0.0.2');
+
 $app = require __DIR__ . "/../src/bootstrap.php";
 $app->run();

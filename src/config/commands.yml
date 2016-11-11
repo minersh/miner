@@ -3,6 +3,10 @@ commands:
     - "@miner.core.environment"
     - "@miner.core.setup"
 
+  "Miner\\Command\\Core\\InteractiveCommand":
+    - "@miner.core.shell"
+    - "@miner.core.shell.output"
+
   "Miner\\Command\\Auth\\LoginCommand":
     - "@miner.auth.service"
 

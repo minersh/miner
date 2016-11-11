@@ -17,7 +17,8 @@ use Pimple\Container;
 /*
  * Configure DI
  */
-$diContainer = new Container();
+$diContainer = new Container(['version' => MINER_VERSION]);
+$diContainer['container'] = $diContainer;
 
 /*
  * Prepare services
@@ -75,7 +76,7 @@ foreach ($commandData['commands'] as $commandClass => $commandArgs) {
 /*
  * Configure Application and Commands
  */
-$app = new Application('miner');
+$app = new Application('miner', MINER_VERSION);
 $app->setDispatcher($eventDispatcher);
 $app->addCommands($commandList);
 
