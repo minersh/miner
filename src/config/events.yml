@@ -1,0 +1,4 @@
+events:
+  listeners:
+    console.command:
+      - "miner.event.listener.command.prerun"

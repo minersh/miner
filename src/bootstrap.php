@@ -7,7 +7,9 @@
  */
 
 require __DIR__ . "/../vendor/autoload.php";
+require __DIR__ . "/functions.php";
 
+use Miner\Api\EventListenerInterface;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Yaml\Yaml;
 use Pimple\Container;
@@ -23,15 +25,9 @@ $diContainer = new Container();
 $serviceData = Yaml::parse(file_get_contents(__DIR__ . '/config/services.yml'));
 foreach ($serviceData['services'] as $serviceId => $serviceConfig) {
     $diContainer[$serviceId] = function (Container $diContainer) use ($serviceConfig) {
-        $arguments = [];
-        if (isset($serviceConfig['arguments']) && !empty($serviceConfig['arguments'])) {
-            foreach ($serviceConfig['arguments'] as $argument) {
-                if (!is_array($argument) && !empty($argument) && '@' === (string)$argument[0]) {
-                    $argument = $diContainer[substr($argument, 1)];
-                }
-                $arguments[] = $argument;
-            }
-        }
+        $arguments = isset($serviceConfig['arguments'])
+            ? resolveDiArguments($serviceConfig['arguments'], $diContainer)
+            : [];
 
         $reflector = new ReflectionClass($serviceConfig['class']);
         if ($reflector->getConstructor() && !empty($arguments)) {
@@ -42,33 +38,45 @@ foreach ($serviceData['services'] as $serviceId => $serviceConfig) {
 }
 
 /*
+ * Prepare Events
+ */
+$eventData = Yaml::parse(file_get_contents(__DIR__ . '/config/events.yml'));
+$eventDispatcher = $diContainer['miner.core.event.dispatcher'];
+foreach ($eventData['events']['listeners'] as $eventId => $serviceIds) {
+    foreach ($serviceIds as $serviceId) {
+        if (isset($diContainer[$serviceId])) {
+            $listener = $diContainer[$serviceId];
+            if ($listener instanceof EventListenerInterface) {
+                $eventDispatcher->addListener($eventId, [$listener, 'handleEvent']);
+            }
+        }
+    }
+}
+
+/*
  * Prepare commands
  */
 $commandList = [];
 $commandData = Yaml::parse(file_get_contents(__DIR__ . '/config/commands.yml'));
 foreach ($commandData['commands'] as $commandClass => $commandArgs) {
-    $arguments = [];
-    if (!empty($commandArgs) && is_array($commandArgs)) {
-        foreach ($commandArgs as $argument) {
-            if (!is_array($argument) && !empty($argument) && '@' === (string)$argument[0]) {
-                $argument = $diContainer[substr($argument, 1)];
-            }
-            $arguments[] = $argument;
-        }
-    }
+    $arguments = !empty($commandArgs)
+        ? resolveDiArguments($commandArgs, $diContainer)
+        : [];
 
     $reflector = new ReflectionClass($commandClass);
     if ($reflector->getConstructor() && !empty($arguments)) {
-        $commandList[] = $reflector->newInstanceArgs($arguments);
+        $instance = $reflector->newInstanceArgs($arguments);
     } else {
-        $commandList[] = $reflector->newInstance();
+        $instance = $reflector->newInstance();
     }
+    $commandList[] = $instance;
 }
 
 /*
  * Configure Application and Commands
  */
-$app = new Application();
+$app = new Application('miner');
+$app->setDispatcher($eventDispatcher);
 $app->addCommands($commandList);
 
 return $app;

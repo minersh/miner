@@ -1,5 +1,60 @@
 services:
+  #
+  # Core-Services
+  #
+  miner.core.event.dispatcher:
+    class: "Symfony\\Component\\EventDispatcher\\EventDispatcher"
+
+  miner.core.environment:
+    class: "Miner\\Service\\Core\\EnvironmentService"
+
   miner.core.setup:
     class: "Miner\\Service\\Core\\SetupService"
-#    arguments:
-#      - ""
+
+  #
+  # Event Listener
+  #
+  miner.event.listener.command.prerun:
+    class: "Miner\\Event\\Command\\CommandPreRunListener"
+    arguments:
+      - "@miner.core.environment"
+      - "@miner.auth.service"
+
+  #
+  # Services
+  #
+  miner.auth.service:
+    class: "Miner\\Service\\Auth\\AuthService"
+    arguments:
+      - "@miner.redmine.api"
+      - "@miner.core.environment"
+      - "@miner.registry.user"
+
+  #
+  # Redmine API
+  #
+  miner.redmine.api:
+    class: "Miner\\Service\\Redmine\\RedmineApi"
+    arguments:
+      - "@miner.redmine.api.auth"
+      - "@miner.redmine.api.user"
+
+  miner.redmine.api.auth:
+    class: "Miner\\Service\\Redmine\\Auth\\RedmineAuthApi"
+
+  miner.redmine.api.user:
+    class: "Miner\\Service\\Redmine\\User\\RedmineUserApi"
+
+  #
+  # Factories
+  #
+  miner.factory.user:
+    class: "Miner\\Factory\\UserFactory"
+
+  #
+  # Registries
+  #
+  miner.registry.user:
+    class: "Miner\\Registry\\User\\UserRegistry"
+    arguments:
+      - "@miner.factory.user"
