@@ -45,15 +45,17 @@ class CommandPreRunListener implements EventListenerInterface
     }
 
     /**
-     * @param Event|ConsoleCommandEvent $event
+     * @param Event $event
      *
      * @return void
      */
     public function handleEvent(Event $event)
     {
-        $this->prepareCommandOptions($event);
-        $this->registerHomeDir($event->getInput(), $event->getOutput());
-        $this->initializeUserContext();
+        if ($event instanceof ConsoleCommandEvent) {
+            $this->prepareCommandOptions($event);
+            $this->registerHomeDir($event->getInput(), $event->getOutput());
+            $this->initializeUserContext();
+        }
     }
 
     /**
