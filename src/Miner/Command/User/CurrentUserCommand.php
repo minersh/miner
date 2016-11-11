@@ -47,8 +47,6 @@ class CurrentUserCommand extends MinerCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        parent::execute($input, $output);
-
         $user = $this->authService->getUser();
         $output->writeln(
             sprintf(

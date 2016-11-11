@@ -2,11 +2,23 @@ services:
   #
   # Core-Services
   #
-  miner.core.setup:
-    class: "Miner\\Service\\Core\\SetupService"
+  miner.core.event.dispatcher:
+    class: "Symfony\\Component\\EventDispatcher\\EventDispatcher"
 
   miner.core.environment:
     class: "Miner\\Service\\Core\\EnvironmentService"
+
+  miner.core.setup:
+    class: "Miner\\Service\\Core\\SetupService"
+
+  #
+  # Event Listener
+  #
+  miner.event.listener.command.prerun:
+    class: "Miner\\Event\\Command\\CommandPreRunListener"
+    arguments:
+      - "@miner.core.environment"
+      - "@miner.auth.service"
 
   #
   # Services

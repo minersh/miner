@@ -63,8 +63,6 @@ class LoginCommand extends MinerCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        parent::execute($input, $output);
-
         $realmurl = $input->getArgument(self::ARG_REALMURL);
         $username = $input->getOption(self::OPT_USERNAME);
         $password = $input->getOption(self::OPT_PASSWORD);

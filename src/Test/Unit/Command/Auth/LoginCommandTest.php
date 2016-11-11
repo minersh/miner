@@ -9,12 +9,12 @@
 namespace Test\Unit\Command\Auth;
 
 use Miner\Command\Auth\LoginCommand;
+use Miner\Event\Command\CommandPreRunListener;
 use Miner\Model\User\User;
 use Miner\Service\Auth\AuthService;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Test\Unit\Command\HelperTrait;
 
 /**
  * Class LoginCommandTest
@@ -23,8 +23,6 @@ use Test\Unit\Command\HelperTrait;
  */
 class LoginCommandTest extends \PHPUnit_Framework_TestCase
 {
-    use HelperTrait;
-
     /**
      * @var LoginCommand
      */
@@ -41,7 +39,7 @@ class LoginCommandTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->command = $this->prepareCommand(new LoginCommand($this->authServiceMock));
+        $this->command = new LoginCommand($this->authServiceMock);
     }
 
     public function executeDataProvider()
@@ -80,11 +78,10 @@ class LoginCommandTest extends \PHPUnit_Framework_TestCase
             ->willReturn($realmurl);
 
         $inputMock
-            ->expects($this->exactly(4))
+            ->expects($this->exactly(3))
             ->method('getOption')
             ->with(
                 $this->logicalOr(
-                    $this->equalTo(LoginCommand::OPT_HOMEDIR),
                     $this->equalTo(LoginCommand::OPT_APITOKEN),
                     $this->equalTo(LoginCommand::OPT_USERNAME),
                     $this->equalTo(LoginCommand::OPT_PASSWORD)
@@ -92,7 +89,7 @@ class LoginCommandTest extends \PHPUnit_Framework_TestCase
             )
             ->willReturnCallback(
                 function ($option) use ($apitoken, $username, $password) {
-                    if (LoginCommand::OPT_HOMEDIR === $option) {
+                    if (CommandPreRunListener::OPT_HOMEDIR === $option) {
                         return null;
                     } else {
                         if (LoginCommand::OPT_APITOKEN === $option) {

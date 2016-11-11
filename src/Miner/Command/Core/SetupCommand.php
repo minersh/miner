@@ -9,6 +9,7 @@
 namespace Miner\Command\Core;
 
 use Miner\Command\MinerCommand;
+use Miner\Service\Core\EnvironmentService;
 use Miner\Service\Core\SetupService;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -21,13 +22,20 @@ class SetupCommand extends MinerCommand
     private $setupService;
 
     /**
+     * @var EnvironmentService
+     */
+    private $environmentService;
+
+    /**
      * SetupCommand constructor.
      *
+     * @param EnvironmentService $environmentService
      * @param SetupService $setupService
      */
-    public function __construct(SetupService $setupService)
+    public function __construct(EnvironmentService $environmentService, SetupService $setupService)
     {
         parent::__construct();
+        $this->environmentService = $environmentService;
         $this->setupService = $setupService;
     }
 
@@ -47,9 +55,9 @@ class SetupCommand extends MinerCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        parent::execute($input, $output);
-        if (!file_exists($this->getHomeDir())) {
-            $this->setupService->installHomeDir($this->getHomeDir());
+        $homedir = $this->environmentService->getHomedir();
+        if (!file_exists($homedir)) {
+            $this->setupService->installHomeDir($homedir);
         }
 
         return 0;

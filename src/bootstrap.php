@@ -9,6 +9,7 @@
 require __DIR__ . "/../vendor/autoload.php";
 require __DIR__ . "/functions.php";
 
+use Miner\Api\EventListenerInterface;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Yaml\Yaml;
 use Pimple\Container;
@@ -37,6 +38,22 @@ foreach ($serviceData['services'] as $serviceId => $serviceConfig) {
 }
 
 /*
+ * Prepare Events
+ */
+$eventData = Yaml::parse(file_get_contents(__DIR__ . '/config/events.yml'));
+$eventDispatcher = $diContainer['miner.core.event.dispatcher'];
+foreach ($eventData['events']['listeners'] as $eventId => $serviceIds) {
+    foreach ($serviceIds as $serviceId) {
+        if (isset($diContainer[$serviceId])) {
+            $listener = $diContainer[$serviceId];
+            if ($listener instanceof EventListenerInterface) {
+                $eventDispatcher->addListener($eventId, [$listener, 'handleEvent']);
+            }
+        }
+    }
+}
+
+/*
  * Prepare commands
  */
 $commandList = [];
@@ -52,18 +69,14 @@ foreach ($commandData['commands'] as $commandClass => $commandArgs) {
     } else {
         $instance = $reflector->newInstance();
     }
-
-    if ($instance instanceof \Miner\Command\MinerCommand) {
-        $instance->setEnvironmentService($diContainer['miner.core.environment']);
-    }
-
     $commandList[] = $instance;
 }
 
 /*
  * Configure Application and Commands
  */
-$app = new Application();
+$app = new Application('miner');
+$app->setDispatcher($eventDispatcher);
 $app->addCommands($commandList);
 
 return $app;
