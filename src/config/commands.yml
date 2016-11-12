@@ -12,3 +12,14 @@ commands:
 
   "Miner\\Command\\User\\CurrentUserCommand":
     - "@miner.auth.service"
+
+  "Miner\\Command\\Project\\ProjectListCommand":
+    - "@miner.redmine.api"
+
+  "Miner\\Command\\Project\\ProjectContextSetCommand":
+    - "@app"
+    - "@miner.core.context"
+    - "@miner.redmine.api"
+
+  "Miner\\Command\\Project\\ProjectContextInfoCommand":
+    - "@miner.core.context"

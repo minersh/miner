@@ -60,10 +60,18 @@ class AuthService
     public function getUser()
     {
         if (!$this->currentUser) {
-            $this->currentUser = $this->environmentService->getUserData();
-            if (empty($this->currentUser)) {
+            $data = $this->environmentService->getUserData();
+            if (!isset($data['userdata'])
+                || empty($data['userdata'])
+                || !isset($data['realmurl'])
+                || empty($data['realmurl'])
+            ) {
                 throw AuthException::noUserConfigured();
             }
+            if (!$this->loginWithToken($data['realmurl'], $data['userdata']['api_key'])) {
+                throw AuthException::badApiToken();
+            }
+            $this->currentUser = $data['userdata'];
         }
 
         return $this->userRegistry->getInstanceByData($this->currentUser);
@@ -85,7 +93,7 @@ class AuthService
             return false;
         }
 
-        $this->environmentService->storeUserData($userdata['user']);
+        $this->environmentService->storeUserData($realmurl, $userdata['user']);
 
         return true;
     }
@@ -107,7 +115,7 @@ class AuthService
             return false;
         }
 
-        $this->environmentService->storeUserData($userdata['user']);
+        $this->environmentService->storeUserData($realmurl, $userdata['user']);
 
         return true;
     }

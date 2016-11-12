@@ -11,6 +11,12 @@ services:
   miner.core.setup:
     class: "Miner\\Service\\Core\\SetupService"
 
+  miner.core.context:
+    class: "Miner\\Service\\Core\\ContextService"
+    arguments:
+    - "@miner.core.environment"
+    - "@miner.redmine.api"
+
   #
   # Event Listener
   #
@@ -49,6 +55,7 @@ services:
     arguments:
       - "@miner.redmine.api.auth"
       - "@miner.redmine.api.user"
+      - "@miner.redmine.api.project"
 
   miner.redmine.api.auth:
     class: "Miner\\Service\\Redmine\\Auth\\RedmineAuthApi"
@@ -56,11 +63,19 @@ services:
   miner.redmine.api.user:
     class: "Miner\\Service\\Redmine\\User\\RedmineUserApi"
 
+  miner.redmine.api.project:
+    class: "Miner\\Service\\Redmine\\Project\\RedmineProjectApi"
+    arguments:
+      - "@miner.factory.project"
+
   #
   # Factories
   #
   miner.factory.user:
     class: "Miner\\Factory\\UserFactory"
+
+  miner.factory.project:
+    class: "Miner\\Factory\\ProjectFactory"
 
   #
   # Registries

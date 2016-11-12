@@ -9,6 +9,7 @@
 namespace Miner\Service\Redmine;
 
 use Miner\Service\Redmine\Auth\RedmineAuthApi;
+use Miner\Service\Redmine\Project\RedmineProjectApi;
 use Miner\Service\Redmine\User\RedmineUserApi;
 use Redmine\Client;
 
@@ -50,15 +51,25 @@ class RedmineApi
     private $userApi;
 
     /**
+     * @var RedmineProjectApi
+     */
+    private $redmineProjectApi;
+
+    /**
      * RedmineApi constructor.
      *
      * @param RedmineAuthApi $authApi
      * @param RedmineUserApi $userApi
+     * @param RedmineProjectApi $redmineProjectApi
      */
-    public function __construct(RedmineAuthApi $authApi, RedmineUserApi $userApi)
-    {
+    public function __construct(
+        RedmineAuthApi $authApi,
+        RedmineUserApi $userApi,
+        RedmineProjectApi $redmineProjectApi
+    ) {
         $this->authApi = $authApi;
         $this->userApi = $userApi;
+        $this->redmineProjectApi = $redmineProjectApi;
     }
 
     /**
@@ -138,5 +149,13 @@ class RedmineApi
     public function getUserApi()
     {
         return $this->userApi->setClient($this, $this->getClient());
+    }
+
+    /**
+     * @return RedmineProjectApi
+     */
+    public function getProjectApi()
+    {
+        return $this->redmineProjectApi->setClient($this, $this->getClient());
     }
 }
