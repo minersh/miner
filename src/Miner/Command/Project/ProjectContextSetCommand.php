@@ -122,7 +122,7 @@ class ProjectContextSetCommand extends MinerCommand
         }
 
         if (!$this->contextService->setProject($project)) {
-            $output->writeln("<errpr>Can't save context.</errpr>");
+            $output->writeln("<error>Can't save context.</error>");
             return 1;
         }
 

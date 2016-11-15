@@ -15,6 +15,7 @@ services:
     class: "Miner\\Service\\Core\\ContextService"
     arguments:
     - "@miner.core.environment"
+    - "@miner.auth.service"
     - "@miner.redmine.api"
 
   #
@@ -56,6 +57,7 @@ services:
       - "@miner.redmine.api.auth"
       - "@miner.redmine.api.user"
       - "@miner.redmine.api.project"
+      - "@miner.redmine.api.ticket"
 
   miner.redmine.api.auth:
     class: "Miner\\Service\\Redmine\\Auth\\RedmineAuthApi"
@@ -68,6 +70,11 @@ services:
     arguments:
       - "@miner.factory.project"
 
+  miner.redmine.api.ticket:
+    class: "Miner\\Service\\Redmine\\Ticket\\RedmineTicketApi"
+    arguments:
+      - "@miner.factory.ticket"
+
   #
   # Factories
   #
@@ -76,6 +83,12 @@ services:
 
   miner.factory.project:
     class: "Miner\\Factory\\ProjectFactory"
+
+  miner.factory.ticket:
+    class: "Miner\\Factory\\TicketFactory"
+    arguments:
+      - "@miner.factory.user"
+      - "@miner.factory.project"
 
   #
   # Registries

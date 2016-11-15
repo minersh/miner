@@ -8,7 +8,9 @@
 
 namespace Miner\Service\Core;
 
+use Miner\Exceptions\AuthException;
 use Miner\Model\Project\Project;
+use Miner\Service\Auth\AuthService;
 use Miner\Service\Redmine\RedmineApi;
 
 class ContextService
@@ -23,6 +25,11 @@ class ContextService
     private $environmentService;
 
     /**
+     * @var AuthService
+     */
+    private $authService;
+
+    /**
      * @var RedmineApi
      */
     private $redmineApi;
@@ -31,12 +38,29 @@ class ContextService
      * ContextService constructor.
      *
      * @param EnvironmentService $environmentService
+     * @param AuthService $authService
      * @param RedmineApi $redmineApi
      */
-    public function __construct(EnvironmentService $environmentService, RedmineApi $redmineApi)
-    {
+    public function __construct(
+        EnvironmentService $environmentService,
+        AuthService $authService,
+        RedmineApi $redmineApi
+    ) {
         $this->environmentService = $environmentService;
+        $this->authService = $authService;
         $this->redmineApi = $redmineApi;
+    }
+
+    /**
+     * @return \Miner\Model\User\User|null
+     */
+    public function getUser()
+    {
+        try {
+            return $this->authService->getUser();
+        } catch (AuthException $authException) {
+            return null;
+        }
     }
 
     /**
@@ -64,6 +88,18 @@ class ContextService
         return $this->storeContextData(
             [
                 self::VAR_PROJECT_ID => $project->getId(),
+            ]
+        );
+    }
+
+    /**
+     * @return bool
+     */
+    public function unsetProject()
+    {
+        return $this->storeContextData(
+            [
+                self::VAR_PROJECT_ID => null,
             ]
         );
     }
