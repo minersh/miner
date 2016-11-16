@@ -19,7 +19,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 class TicketListCommand extends MinerCommand
 {
     const OPT_PROJECT = 'project';
+    const OPT_PROJECT_IGNORE = 'ignore-project';
     const OPT_USER = 'user';
+    const OPT_USER_IGNORE = 'ignore-user';
+    const OPT_NO_SUBJECT_TRUNCATE = 'no-truncate';
     const OPT_ALL = 'all';
 
     /**
@@ -66,13 +69,31 @@ class TicketListCommand extends MinerCommand
                 'ID of user to filter for.'
             )
             ->addOption(
+                self::OPT_USER_IGNORE,
+                null,
+                InputOption::VALUE_NONE,
+                'Ignore user context.'
+            )
+            ->addOption(
                 self::OPT_PROJECT,
                 'p',
                 InputOption::VALUE_OPTIONAL,
                 'ID of project to filter for.'
             )
+            ->addOption(
+                self::OPT_PROJECT_IGNORE,
+                null,
+                InputOption::VALUE_NONE,
+                'Ignore project context.'
+            )
+            ->addOption(
+                self::OPT_NO_SUBJECT_TRUNCATE,
+                't',
+                InputOption::VALUE_NONE,
+                'Do not truncate sicket subject.'
+            )
             ->setDescription(
-                "Returns the lust of all relevant tickets the user has access for."
+                "Returns the list of all relevant tickets the user has access for."
             );
     }
 
@@ -92,7 +113,7 @@ class TicketListCommand extends MinerCommand
 
         $userId = (int)$input->getOption(self::OPT_USER);
         if ($userId < 1) {
-            if ($input->getOption(self::OPT_ALL)) {
+            if ($input->getOption(self::OPT_USER_IGNORE) || $input->getOption(self::OPT_ALL)) {
                 $userId = null;
             } else {
                 $userId = $currentUserId;
@@ -101,7 +122,7 @@ class TicketListCommand extends MinerCommand
 
         $projectId = (int)$input->getOption(self::OPT_PROJECT);
         if ($projectId < 1) {
-            if ($input->getOption(self::OPT_ALL)) {
+            if ($input->getOption(self::OPT_PROJECT_IGNORE) || $input->getOption(self::OPT_ALL)) {
                 $projectId = null;
             } else {
                 $contextProject = $this->contextService->getProject();
@@ -139,10 +160,17 @@ class TicketListCommand extends MinerCommand
                 $assignedUserName = '-';
             }
 
+            $subject = $ticket->getSubject();
+            if (!$input->getOption(self::OPT_NO_SUBJECT_TRUNCATE)) {
+                if (strlen($subject) > 30) {
+                    $subject = substr($subject, 0, 27) . '...';
+                }
+            }
+
             $table->addRow(
                 [
                     $ticket->getId(),
-                    $ticket->getSubject(),
+                    $subject,
                     $assignedUserName,
                     $ticket->getStatus(),
                     $ticket->getPriority(),

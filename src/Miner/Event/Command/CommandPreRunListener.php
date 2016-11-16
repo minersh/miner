@@ -9,6 +9,7 @@
 namespace Miner\Event\Command;
 
 use Miner\Api\EventListenerInterface;
+use Miner\Command\MinerCommand;
 use Miner\Exceptions\AuthException;
 use Miner\Service\Auth\AuthService;
 use Miner\Service\Core\EnvironmentService;
@@ -54,7 +55,13 @@ class CommandPreRunListener implements EventListenerInterface
         if ($event instanceof ConsoleCommandEvent) {
             $this->prepareCommandOptions($event);
             $this->registerHomeDir($event->getInput(), $event->getOutput());
-            $this->initializeUserContext();
+
+            $command = $event->getCommand();
+            if ($command instanceof MinerCommand
+                && $command->requiresAuthenticatedUser()
+            ) {
+                $this->initializeUserContext();
+            }
         }
     }
 
@@ -104,7 +111,7 @@ class CommandPreRunListener implements EventListenerInterface
     {
         try {
             $this->authService->getUser();
-        } catch (AuthException $exception) {
+        } catch (\Exception $exception) {
             // silently ignore this error
         }
     }

@@ -16,6 +16,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 abstract class MinerCommand extends Command
 {
     /**
+     * @return bool
+     */
+    public function requiresAuthenticatedUser()
+    {
+        return true;
+    }
+
+    /**
      * @param Application $application
      * @param OutputInterface $output
      * @param string $command
