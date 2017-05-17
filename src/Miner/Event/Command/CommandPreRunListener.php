@@ -10,9 +10,7 @@ namespace Miner\Event\Command;
 
 use Miner\Api\EventListenerInterface;
 use Miner\Command\MinerCommand;
-use Miner\Exceptions\AuthException;
-use Miner\Service\Auth\AuthService;
-use Miner\Service\Core\EnvironmentService;
+use Miner\Service\Core\CommandContextService;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -24,25 +22,18 @@ class CommandPreRunListener implements EventListenerInterface
     const OPT_HOMEDIR = 'home';
 
     /**
-     * @var AuthService
+     * @var CommandContextService
      */
-    private $authService;
-
-    /**
-     * @var EnvironmentService
-     */
-    private $environmentService;
+    private $commandContextService;
 
     /**
      * CommandPreRunListener constructor.
      *
-     * @param EnvironmentService $environmentService
-     * @param AuthService $authService
+     * @param CommandContextService $commandContextService
      */
-    public function __construct(EnvironmentService $environmentService, AuthService $authService)
+    public function __construct(CommandContextService $commandContextService)
     {
-        $this->environmentService = $environmentService;
-        $this->authService = $authService;
+        $this->commandContextService = $commandContextService;
     }
 
     /**
@@ -88,20 +79,7 @@ class CommandPreRunListener implements EventListenerInterface
      */
     private function registerHomeDir(InputInterface $input, OutputInterface $output)
     {
-        $homeDir = $input->getOption(self::OPT_HOMEDIR);
-        if (empty($homeDir)) {
-            $homeDir = $this->environmentService->getFallbackHomeDir();
-        }
-
-        $output->writeln(
-            sprintf(
-                "[!] Using Home dir: <info>%s</info>",
-                $homeDir
-            ),
-            OutputInterface::VERBOSITY_VERBOSE
-        );
-
-        $this->environmentService->setHomedirPreference($homeDir);
+        $this->commandContextService->registerHomeDir(self::OPT_HOMEDIR, $input, $output);
     }
 
     /**
@@ -109,10 +87,6 @@ class CommandPreRunListener implements EventListenerInterface
      */
     private function initializeUserContext()
     {
-        try {
-            $this->authService->getUser();
-        } catch (\Exception $exception) {
-            // silently ignore this error
-        }
+        $this->commandContextService->initializeUserContext();
     }
 }

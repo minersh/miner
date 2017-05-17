@@ -14,9 +14,15 @@ services:
   miner.core.context:
     class: "Miner\\Service\\Core\\ContextService"
     arguments:
-    - "@miner.core.environment"
-    - "@miner.auth.service"
-    - "@miner.redmine.api"
+      - "@miner.core.environment"
+      - "@miner.auth.service"
+      - "@miner.redmine.api"
+
+  miner.core.context.command:
+    class: "Miner\\Service\\Core\\CommandContextService"
+    arguments:
+      - "@miner.core.environment"
+      - "@miner.auth.service"
 
   #
   # Event Listener
@@ -24,8 +30,7 @@ services:
   miner.event.listener.command.prerun:
     class: "Miner\\Event\\Command\\CommandPreRunListener"
     arguments:
-      - "@miner.core.environment"
-      - "@miner.auth.service"
+      - "@miner.core.context.command"
 
   #
   # Interactive Shell
