@@ -33,10 +33,12 @@ class RedmineTicketApi extends RedmineSubApi
     /**
      * @param int|null $userId
      * @param int|null $projectId
+     * @param int|null $limit
+     * @param int|null $offset
      *
-     * @return \Miner\Model\Ticket\Ticket[]
+     * @return Ticket[]
      */
-    public function getList($userId = null, $projectId = null)
+    public function getList($userId = null, $projectId = null, $limit = null, $offset = null)
     {
         $userId = (int)$userId;
         $projectId = (int)$projectId;
@@ -48,6 +50,14 @@ class RedmineTicketApi extends RedmineSubApi
         if ($projectId > 0) {
             $params['project_id'] = $projectId;
         }
+
+        $params = array_merge(
+            [
+                'limit' => is_null($limit) ? 10000 : (int)$limit,
+                'offset' => is_null($offset) ? 0 : (int)$offset,
+            ],
+            $params
+        );
 
         $data = $this->getClient()->issue->all($params);
 
@@ -70,6 +80,7 @@ class RedmineTicketApi extends RedmineSubApi
                 $data['issue'],
             ]
         );
+
         return current($tickets);
     }
 
@@ -84,6 +95,7 @@ class RedmineTicketApi extends RedmineSubApi
         foreach ($data as $ticket) {
             $tickets[] = $this->ticketFactory->createByTicketdata($ticket);
         }
+
         return $tickets;
     }
 }

@@ -30,11 +30,24 @@ class RedmineProjectApi extends RedmineSubApi
     }
 
     /**
+     * @param int|null $offset
+     * @param int|null $limit
+     * @param array $params
+     *
      * @return Project[]
      */
-    public function getList()
+    public function getList($offset = null, $limit = null, array $params = [])
     {
-        $data = $this->getClient()->project->all();
+        $params = array_merge(
+            [
+                'limit' => is_null($limit) ? 10000 : (int)$limit,
+                'offset' => is_null($offset) ? 0 : (int)$offset,
+            ],
+            $params
+        );
+
+        $data = $this->getClient()->project->all($params);
+
         return $this->hydrate($data['projects']);
     }
 
@@ -54,6 +67,7 @@ class RedmineProjectApi extends RedmineSubApi
                 $data['project'],
             ]
         );
+
         return current($projects);
     }
 
@@ -68,6 +82,7 @@ class RedmineProjectApi extends RedmineSubApi
         foreach ($data as $project) {
             $projects[] = $this->projectFactory->createByProjectdata($project);
         }
+
         return $projects;
     }
 }
