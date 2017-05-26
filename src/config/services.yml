@@ -69,6 +69,8 @@ services:
 
   miner.redmine.api.user:
     class: "Miner\\Service\\Redmine\\User\\RedmineUserApi"
+    arguments:
+      - "@miner.factory.user"
 
   miner.redmine.api.project:
     class: "Miner\\Service\\Redmine\\Project\\RedmineProjectApi"

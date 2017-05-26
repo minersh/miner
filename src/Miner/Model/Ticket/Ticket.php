@@ -70,6 +70,14 @@ class Ticket
     }
 
     /**
+     * @return array
+     */
+    public function getTicketData()
+    {
+        return (array)$this->ticketData;
+    }
+
+    /**
      * @param OutputInterface $output
      */
     public function render(OutputInterface $output)

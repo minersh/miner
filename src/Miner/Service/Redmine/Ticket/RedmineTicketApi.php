@@ -85,6 +85,28 @@ class RedmineTicketApi extends RedmineSubApi
     }
 
     /**
+     * @param Ticket $ticket
+     *
+     * @return Ticket|null
+     */
+    public function save(Ticket $ticket)
+    {
+        if ($ticket->getId()) {
+            $resp = $this->getClient()->issue->update($ticket->getId(), $ticket->getTicketData());
+        } else {
+            $resp = $this->getClient()->issue->create($ticket->getTicketData());
+        }
+        /* @var \SimpleXMLElement $resp */
+
+        $ticketId = intval((string)$resp->id);
+        if ($ticketId > 0) {
+            return $this->getTicket($ticketId);
+        }
+
+        return null;
+    }
+
+    /**
      * @param array $data
      *
      * @return Ticket[]

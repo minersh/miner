@@ -50,6 +50,10 @@ class CommandContextService
             $homeDir = $this->environmentService->getFallbackHomeDir();
         }
 
+        if (!is_dir($homeDir)) {
+            @mkdir($homeDir, 0700, true);
+        }
+
         $output->writeln(
             sprintf(
                 "[!] Using Home dir: <info>%s</info>",
