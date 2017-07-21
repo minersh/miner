@@ -21,7 +21,7 @@ build:
     tests:
         override:
             -
-                command: 'php vendor/bin/phing qa:run'
-                    coverage:
-                        file: 'code-coverage.xml'
-                        format: 'clover'
+                command: 'vendor/bin/phpunit --coverage-clover=some-file'
+                coverage:
+                    file: 'some-file'
+                    format: 'clover'
