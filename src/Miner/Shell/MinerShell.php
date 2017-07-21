@@ -61,7 +61,7 @@ class MinerShell extends Shell
     }
 
     /**
-     * @return array
+     * @return \Symfony\Component\Console\Command\Command[]
      */
     protected function getDefaultCommands()
     {
