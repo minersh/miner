@@ -104,3 +104,9 @@ services:
     class: "Miner\\Registry\\User\\UserRegistry"
     arguments:
       - "@miner.factory.user"
+
+  #
+  # Renderer
+  #
+  miner.renderer.ticket:
+    class: "Miner\\Service\\Renderer\\TicketRenderer"
