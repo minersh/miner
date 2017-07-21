@@ -67,7 +67,7 @@ class RedmineTicketApi extends RedmineSubApi
     /**
      * @param int $ticketId
      *
-     * @return Ticket
+     * @return Ticket|null
      */
     public function getTicket(int $ticketId)
     {
@@ -82,6 +82,16 @@ class RedmineTicketApi extends RedmineSubApi
         );
 
         return current($tickets);
+    }
+
+    /**
+     * @param string $ticketId
+     *
+     * @return int
+     */
+    public function getNormalizedTicketId(string $ticketId)
+    {
+        return (int)str_replace('#', '', trim($ticketId));
     }
 
     /**
