@@ -22,6 +22,6 @@ build:
         override:
             -
                 command: 'php vendor/bin/phing qa:run'
-                coverage:
-                    file: 'code-coverage.xml'
-                    format: 'clover'
+                    coverage:
+                        file: 'code-coverage.xml'
+                        format: 'clover'
