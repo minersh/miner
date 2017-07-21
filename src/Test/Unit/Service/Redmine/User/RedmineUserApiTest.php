@@ -8,6 +8,7 @@
 
 namespace Test\Unit\Service\Redmine\User;
 
+use Miner\Factory\UserFactory;
 use Miner\Service\Redmine\RedmineApi;
 use Miner\Service\Redmine\RedmineSubApi;
 use Miner\Service\Redmine\User\RedmineUserApi;
@@ -37,6 +38,11 @@ class RedmineUserApiTest extends \PHPUnit_Framework_TestCase
      */
     private $clientMock;
 
+    /**
+     * @var UserFactory
+     */
+    private $userFactory;
+
     public function setUp()
     {
         $this->remineApiMock = $this->getMockBuilder(RedmineApi::class)
@@ -48,7 +54,9 @@ class RedmineUserApiTest extends \PHPUnit_Framework_TestCase
             ->setMethods(['__get'])
             ->getMock();
 
-        $this->service = new RedmineUserApi();
+        $this->userFactory = new UserFactory();
+
+        $this->service = new RedmineUserApi($this->userFactory);
         $this->service->setClient($this->remineApiMock, $this->clientMock);
     }
 
