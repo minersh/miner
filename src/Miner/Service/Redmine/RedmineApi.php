@@ -9,6 +9,8 @@
 namespace Miner\Service\Redmine;
 
 use Miner\Service\Redmine\Auth\RedmineAuthApi;
+use Miner\Service\Redmine\Project\RedmineProjectApi;
+use Miner\Service\Redmine\Ticket\RedmineTicketApi;
 use Miner\Service\Redmine\User\RedmineUserApi;
 use Redmine\Client;
 
@@ -50,15 +52,33 @@ class RedmineApi
     private $userApi;
 
     /**
+     * @var RedmineProjectApi
+     */
+    private $projectApi;
+
+    /**
+     * @var RedmineTicketApi
+     */
+    private $ticketApi;
+
+    /**
      * RedmineApi constructor.
      *
      * @param RedmineAuthApi $authApi
      * @param RedmineUserApi $userApi
+     * @param RedmineProjectApi $projectApi
+     * @param RedmineTicketApi $ticketApi
      */
-    public function __construct(RedmineAuthApi $authApi, RedmineUserApi $userApi)
-    {
+    public function __construct(
+        RedmineAuthApi $authApi,
+        RedmineUserApi $userApi,
+        RedmineProjectApi $projectApi,
+        RedmineTicketApi $ticketApi
+    ) {
         $this->authApi = $authApi;
         $this->userApi = $userApi;
+        $this->projectApi = $projectApi;
+        $this->ticketApi = $ticketApi;
     }
 
     /**
@@ -138,5 +158,21 @@ class RedmineApi
     public function getUserApi()
     {
         return $this->userApi->setClient($this, $this->getClient());
+    }
+
+    /**
+     * @return RedmineProjectApi
+     */
+    public function getProjectApi()
+    {
+        return $this->projectApi->setClient($this, $this->getClient());
+    }
+
+    /**
+     * @return RedmineTicketApi
+     */
+    public function getTicketApi()
+    {
+        return $this->ticketApi->setClient($this, $this->getClient());
     }
 }

@@ -8,12 +8,10 @@
 
 namespace Test\Unit\Event\Command;
 
+use Miner\Command\MinerCommand;
 use Miner\Event\Command\CommandPreRunListener;
-use Miner\Exceptions\AuthException;
-use Miner\Service\Auth\AuthService;
-use Miner\Service\Core\EnvironmentService;
+use Miner\Service\Core\CommandContextService;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -26,58 +24,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class CommandPreRunListenerTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @var CommandPreRunListener
-     */
-    private $listener;
-
-    /**
-     * @var EnvironmentService|Mock $environmentServiceMock
-     */
-    private $environmentServiceMock;
-
-    /**
-     * @var AuthService|Mock
-     */
-    private $authServiceMock;
-
-    public function setUp()
+    public function testHandleEvent()
     {
-        $this->environmentServiceMock = $this->getMockBuilder(EnvironmentService::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['getFallbackHomeDir', 'setHomedirPreference'])
-            ->getMock();
-
-        $this->authServiceMock = $this->getMockBuilder(AuthService::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['getUser'])
-            ->getMock();
-
-        $this->listener = new CommandPreRunListener(
-            $this->environmentServiceMock,
-            $this->authServiceMock
-        );
-    }
-
-    public function test()
-    {
-        $homeDir = '/tmp/miner-test-home';
-
-        $this->authServiceMock
-            ->expects($this->once())
-            ->method('getUser')
-            ->willThrowException(AuthException::noUserConfigured());
-
-        $this->environmentServiceMock
-            ->expects($this->once())
-            ->method('getFallbackHomeDir')
-            ->willReturn($homeDir);
-
-        $this->environmentServiceMock
-            ->expects($this->once())
-            ->method('setHomedirPreference')
-            ->with($this->equalTo($homeDir));
-
         $inputMock = $this->getMockBuilder(InputInterface::class)
             ->getMock();
 
@@ -85,57 +33,35 @@ class CommandPreRunListenerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('hasOption')
             ->with($this->equalTo(CommandPreRunListener::OPT_HOMEDIR))
-            ->willReturn(null);
-
-        $inputMock
-            ->expects($this->once())
-            ->method('getOption')
-            ->with($this->equalTo(CommandPreRunListener::OPT_HOMEDIR))
-            ->willReturn(null);
+            ->willReturn(false);
 
         $outputMock = $this->getMockBuilder(OutputInterface::class)
             ->getMock();
 
-        $outputMock
-            ->expects($this->once())
-            ->method('writeln')
-            ->with(
-                $this->equalTo(
-                    sprintf(
-                        "[!] Using Home dir: <info>%s</info>",
-                        $homeDir
-                    )
-                ),
-                $this->equalTo(
-                    OutputInterface::VERBOSITY_VERBOSE
-                )
-            );
-
-        $commandMock = $this->getMockBuilder(Command::class)
+        $contextMock = $this->getMockBuilder(CommandContextService::class)
             ->disableOriginalConstructor()
-            ->setMethods(['addOption'])
+            ->setMethods(['registerHomeDir', 'initializeUserContext'])
             ->getMock();
+        /* @var CommandContextService|Mock $contextMock */
 
-        $commandMock
+        $contextMock
             ->expects($this->once())
-            ->method('addOption')
+            ->method('registerHomeDir')
             ->with(
                 $this->equalTo(CommandPreRunListener::OPT_HOMEDIR),
-                $this->equalTo(null),
-                $this->equalTo(InputOption::VALUE_OPTIONAL),
-                $this->equalTo("Defines the home directory to use for this miner installation")
+                $this->equalTo($inputMock),
+                $this->equalTo($outputMock)
             );
+
+        $contextMock
+            ->expects($this->once())
+            ->method('initializeUserContext');
 
         $eventMock = $this->getMockBuilder(ConsoleCommandEvent::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getCommand', 'getInput', 'getOutput'])
+            ->setMethods(['getInput', 'getOutput', 'getCommand'])
             ->getMock();
         /* @var ConsoleCommandEvent|Mock $eventMock */
-
-        $eventMock
-            ->expects($this->once())
-            ->method('getCommand')
-            ->willReturn($commandMock);
 
         $eventMock
             ->expects($this->exactly(2))
@@ -147,6 +73,32 @@ class CommandPreRunListenerTest extends \PHPUnit_Framework_TestCase
             ->method('getOutput')
             ->willReturn($outputMock);
 
-        $this->listener->handleEvent($eventMock);
+        $cmdMock = $this->getMockBuilder(MinerCommand::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['addOption', 'requiresAuthenticatedUser'])
+            ->getMock();
+
+        $cmdMock
+            ->expects($this->once())
+            ->method('addOption')
+            ->with(
+                $this->equalTo(CommandPreRunListener::OPT_HOMEDIR),
+                $this->equalTo(null),
+                $this->equalTo(InputOption::VALUE_OPTIONAL),
+                $this->equalTo("Defines the home directory to use for this miner installation")
+            );
+
+        $cmdMock
+            ->expects($this->once())
+            ->method('requiresAuthenticatedUser')
+            ->willReturn(true);
+
+        $eventMock
+            ->expects($this->exactly(2))
+            ->method('getCommand')
+            ->willReturn($cmdMock);
+
+        $listener = new CommandPreRunListener($contextMock);
+        $listener->handleEvent($eventMock);
     }
 }

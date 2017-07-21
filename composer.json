@@ -16,7 +16,8 @@
     "pimple/pimple": "~3.0",
     "symfony/yaml": "^3.1",
     "kbsali/redmine-api": "~1.0",
-    "symfony/event-dispatcher": "^3.1"
+    "symfony/event-dispatcher": "^3.1",
+    "psy/psysh": "^0.7.2"
   },
   "require-dev": {
     "phing/phing": "2.*",

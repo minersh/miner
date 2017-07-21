@@ -11,14 +11,37 @@ services:
   miner.core.setup:
     class: "Miner\\Service\\Core\\SetupService"
 
+  miner.core.context:
+    class: "Miner\\Service\\Core\\ContextService"
+    arguments:
+      - "@miner.core.environment"
+      - "@miner.auth.service"
+      - "@miner.redmine.api"
+
+  miner.core.context.command:
+    class: "Miner\\Service\\Core\\CommandContextService"
+    arguments:
+      - "@miner.core.environment"
+      - "@miner.auth.service"
+
   #
   # Event Listener
   #
   miner.event.listener.command.prerun:
     class: "Miner\\Event\\Command\\CommandPreRunListener"
     arguments:
-      - "@miner.core.environment"
-      - "@miner.auth.service"
+      - "@miner.core.context.command"
+
+  #
+  # Interactive Shell
+  #
+  miner.core.shell:
+    class: "Miner\\Shell\\MinerShell"
+    arguments:
+      - "@container"
+
+  miner.core.shell.output:
+    class: "Psy\\Output\\ShellOutput"
 
   #
   # Services
@@ -38,18 +61,41 @@ services:
     arguments:
       - "@miner.redmine.api.auth"
       - "@miner.redmine.api.user"
+      - "@miner.redmine.api.project"
+      - "@miner.redmine.api.ticket"
 
   miner.redmine.api.auth:
     class: "Miner\\Service\\Redmine\\Auth\\RedmineAuthApi"
 
   miner.redmine.api.user:
     class: "Miner\\Service\\Redmine\\User\\RedmineUserApi"
+    arguments:
+      - "@miner.factory.user"
+
+  miner.redmine.api.project:
+    class: "Miner\\Service\\Redmine\\Project\\RedmineProjectApi"
+    arguments:
+      - "@miner.factory.project"
+
+  miner.redmine.api.ticket:
+    class: "Miner\\Service\\Redmine\\Ticket\\RedmineTicketApi"
+    arguments:
+      - "@miner.factory.ticket"
 
   #
   # Factories
   #
   miner.factory.user:
     class: "Miner\\Factory\\UserFactory"
+
+  miner.factory.project:
+    class: "Miner\\Factory\\ProjectFactory"
+
+  miner.factory.ticket:
+    class: "Miner\\Factory\\TicketFactory"
+    arguments:
+      - "@miner.factory.user"
+      - "@miner.factory.project"
 
   #
   # Registries

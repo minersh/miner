@@ -3,8 +3,35 @@ commands:
     - "@miner.core.environment"
     - "@miner.core.setup"
 
+  "Miner\\Command\\Core\\InteractiveCommand":
+    - "@miner.core.shell"
+    - "@miner.core.shell.output"
+
   "Miner\\Command\\Auth\\LoginCommand":
     - "@miner.auth.service"
 
   "Miner\\Command\\User\\CurrentUserCommand":
     - "@miner.auth.service"
+
+  "Miner\\Command\\Project\\ProjectListCommand":
+    - "@miner.redmine.api"
+
+  "Miner\\Command\\Project\\ProjectContextSetCommand":
+    - "@app"
+    - "@miner.core.context"
+    - "@miner.redmine.api"
+
+  "Miner\\Command\\Project\\ProjectContextInfoCommand":
+    - "@miner.core.context"
+
+  "Miner\\Command\\Project\\ProjectContextDeleteCommand":
+    - "@miner.core.context"
+
+  "Miner\\Command\\Ticket\\TicketListCommand":
+   - "@miner.core.context"
+   - "@miner.redmine.api"
+
+  "Miner\\Command\\Ticket\\TicketCreateCommand":
+   - "@miner.core.context"
+   - "@miner.redmine.api"
+   - "@miner.factory.ticket"

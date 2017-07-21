@@ -37,51 +37,74 @@ class User
     }
 
     /**
-     * @return int
+     * @return int|null
      */
     public function getId()
     {
-        return (int)$this->userdata['id'];
+        return isset($this->userdata['id'])
+            ? (int)$this->userdata['id']
+            : null;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getLogin()
     {
-        return (string)$this->userdata['login'];
+        return isset($this->userdata['login'])
+            ? (string)$this->userdata['login']
+            : null;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getFirstname()
     {
-        return (string)$this->userdata['firstname'];
+        return isset($this->userdata['firstname'])
+            ? (string)$this->userdata['firstname']
+            : null;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getLastname()
     {
-        return (string)$this->userdata['lastname'];
+        return isset($this->userdata['lastname'])
+            ? (string)$this->userdata['lastname']
+            : null;
     }
 
     /**
-     * @return string
+     * @return string|null
+     */
+    public function getName()
+    {
+        if (isset($this->userdata['name'])) {
+            return (string)$this->userdata['name'];
+        }
+        return trim(sprintf('%s %s', $this->getFirstname(), $this->getLastname()));
+    }
+
+    /**
+     * @return string|null
      */
     public function getMail()
     {
-        return (string)$this->userdata['mail'];
+        return isset($this->userdata['mail'])
+            ? (string)$this->userdata['mail']
+            : null;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getApiKey()
     {
-        return (string)$this->userdata['api_key'];
+        return isset($this->userdata['api_key'])
+            ? (string)$this->userdata['api_key']
+            : null;
     }
 
     /**
@@ -89,6 +112,8 @@ class User
      */
     public function getStatus()
     {
-        return (int)$this->userdata['status'];
+        return isset($this->userdata['status'])
+            ? (int)$this->userdata['status']
+            : null;
     }
 }

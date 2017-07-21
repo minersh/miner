@@ -67,14 +67,20 @@ class EnvironmentService
     }
 
     /**
+     * @param string $realmurl
      * @param array $userdata
      *
      * @return bool
      */
-    public function storeUserData(array $userdata)
+    public function storeUserData(string $realmurl, array $userdata)
     {
+        $data = [
+            'realmurl' => $realmurl,
+            'userdata' => $userdata,
+        ];
+
         $filename = $this->getHomedir() . '/' . self::FILE_USERDATA;
-        if (file_put_contents($filename, $this->encodeJson($userdata)) > 0) {
+        if (file_put_contents($filename, $this->encodeJson($data)) > 0) {
             chmod($filename, 0600);
             return true;
         }

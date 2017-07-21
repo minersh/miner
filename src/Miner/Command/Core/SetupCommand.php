@@ -40,6 +40,14 @@ class SetupCommand extends MinerCommand
     }
 
     /**
+     * @return bool
+     */
+    public function requiresAuthenticatedUser()
+    {
+        return false;
+    }
+
+    /**
      * @inheritdoc
      */
     protected function configure()

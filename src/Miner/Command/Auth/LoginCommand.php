@@ -75,17 +75,7 @@ class LoginCommand extends MinerCommand
             return 1;
         }
 
-        if (!empty($apiToken)) {
-            $success = $this->authService->loginWithToken($realmurl, $apiToken);
-        } else {
-            if (empty($username) || empty($password)) {
-                $output->writeln(
-                    "<error>[!] ERROR: Please provide the API-token or your username and password!</error>"
-                );
-                return 1;
-            }
-            $success = $this->authService->loginWithCredentials($realmurl, $username, $password);
-        }
+        $success = $this->runTokenLogin($output, $realmurl, $apiToken, $username, $password);
 
         if (!$success) {
             $output->writeln("<error>[!] ERROR: Invalid API-token or credentials. Please try again.</error>");
@@ -101,5 +91,44 @@ class LoginCommand extends MinerCommand
         }
 
         return 0;
+    }
+
+    /**
+     * @param OutputInterface $output
+     * @param $realmurl
+     * @param $apiToken
+     * @param $username
+     * @param $password
+     *
+     * @return bool
+     */
+    private function runTokenLogin(OutputInterface $output, $realmurl, $apiToken, $username, $password)
+    {
+        if (!empty($apiToken)) {
+            $success = $this->authService->loginWithToken($realmurl, $apiToken);
+        } else {
+            $success = $this->runCredentialLogin($output, $realmurl, $username, $password);
+        }
+
+        return $success;
+    }
+
+    /**
+     * @param OutputInterface $output
+     * @param $realmurl
+     * @param $username
+     * @param $password
+     *
+     * @return bool
+     */
+    private function runCredentialLogin(OutputInterface $output, $realmurl, $username, $password)
+    {
+        if (empty($username) || empty($password)) {
+            $output->writeln(
+                "<error>[!] ERROR: Please provide the API-token or your username and password!</error>"
+            );
+            return false;
+        }
+        return $this->authService->loginWithCredentials($realmurl, $username, $password);
     }
 }

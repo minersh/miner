@@ -17,7 +17,13 @@ use Pimple\Container;
 /*
  * Configure DI
  */
-$diContainer = new Container();
+$diContainer = new Container(['version' => MINER_VERSION]);
+$diContainer['container'] = $diContainer;
+
+/*
+ * Initialize Application
+ */
+$diContainer['app'] = new Application('miner', MINER_VERSION);
 
 /*
  * Prepare services
@@ -40,8 +46,8 @@ foreach ($serviceData['services'] as $serviceId => $serviceConfig) {
 /*
  * Prepare Events
  */
-$eventData = Yaml::parse(file_get_contents(__DIR__ . '/config/events.yml'));
 $eventDispatcher = $diContainer['miner.core.event.dispatcher'];
+$eventData = Yaml::parse(file_get_contents(__DIR__ . '/config/events.yml'));
 foreach ($eventData['events']['listeners'] as $eventId => $serviceIds) {
     foreach ($serviceIds as $serviceId) {
         if (isset($diContainer[$serviceId])) {
@@ -73,10 +79,9 @@ foreach ($commandData['commands'] as $commandClass => $commandArgs) {
 }
 
 /*
- * Configure Application and Commands
+ * Register additional services and commands
  */
-$app = new Application('miner');
-$app->setDispatcher($eventDispatcher);
-$app->addCommands($commandList);
+$diContainer['app']->setDispatcher($eventDispatcher);
+$diContainer['app']->addCommands($commandList);
 
-return $app;
+return $diContainer['app'];

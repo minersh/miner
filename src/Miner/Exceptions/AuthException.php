@@ -18,4 +18,12 @@ class AuthException extends \Exception
     {
         return new static("No User configured. Please login first!");
     }
+
+    /**
+     * @return AuthException
+     */
+    public static function badApiToken()
+    {
+        return new static("Cour API token is invalid. Please re-login and try again!");
+    }
 }
