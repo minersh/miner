@@ -50,7 +50,7 @@ class TicketFactory
     public function createByTicketdata(array $ticketdata)
     {
         $instance = $this->create();
-        $instance->setTicketData($ticketdata);
+        $instance->setModelData($ticketdata);
         return $instance;
     }
 }

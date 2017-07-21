@@ -10,9 +10,13 @@ namespace Miner\Command\Project;
 
 use Miner\Command\MinerCommand;
 use Miner\Service\Core\ContextService;
+use Miner\Service\Renderer\ProjectRenderer;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Class ProjectContextInfoCommand
+ */
 class ProjectContextInfoCommand extends MinerCommand
 {
     /**
@@ -21,16 +25,21 @@ class ProjectContextInfoCommand extends MinerCommand
     private $contextService;
 
     /**
-     * ProjectListCommand constructor.
-     *
-     * @param ContextService $contextService
-     *
-     * @internal param RedmineApi $redmineApi
+     * @var \Miner\Service\Renderer\ProjectRenderer
      */
-    public function __construct(ContextService $contextService)
+    private $projectRenderer;
+
+    /**
+     * ProjectContextInfoCommand constructor.
+     *
+     * @param \Miner\Service\Core\ContextService $contextService
+     * @param \Miner\Service\Renderer\ProjectRenderer $projectRenderer
+     */
+    public function __construct(ContextService $contextService, ProjectRenderer $projectRenderer)
     {
         parent::__construct(null);
         $this->contextService = $contextService;
+        $this->projectRenderer = $projectRenderer;
     }
 
     /**
@@ -59,8 +68,9 @@ class ProjectContextInfoCommand extends MinerCommand
             $output->writeln("<comment>No project context informations found.</comment>");
             $output->writeln("Use 'project:context:set' to create your context.");
         } else {
-            $project->render($output);
+            $this->projectRenderer->render($project, $output);
         }
+
         return 0;
     }
 }

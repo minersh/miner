@@ -11,12 +11,14 @@ namespace Miner\Model\Ticket;
 use Miner\Factory\ProjectFactory;
 use Miner\Factory\TicketFactory;
 use Miner\Factory\UserFactory;
+use Miner\Model\AbstractModel;
 use Miner\Model\Project\Project;
 use Miner\Model\User\User;
-use Symfony\Component\Console\Helper\Table;
-use Symfony\Component\Console\Output\OutputInterface;
 
-class Ticket
+/**
+ * Class Ticket
+ */
+class Ticket extends AbstractModel
 {
     /**
      * @var TicketFactory
@@ -52,57 +54,26 @@ class Ticket
         UserFactory $userFactory,
         array $ticketData = []
     ) {
-        $this->setTicketData($ticketData);
+        $this->setModelData($ticketData);
         $this->ticketFactory = $ticketFactory;
         $this->projectFactory = $projectFactory;
         $this->userFactory = $userFactory;
     }
 
     /**
-     * @param array $ticketData
-     *
-     * @return $this
+     * @param array $data
      */
-    public function setTicketData(array $ticketData = [])
+    public function setModelData(array $data)
     {
-        $this->ticketData = $ticketData;
-        return $this;
+        $this->ticketData = $data;
     }
 
     /**
      * @return array
      */
-    public function getTicketData()
+    public function getModelData()
     {
-        return (array)$this->ticketData;
-    }
-
-    /**
-     * @param OutputInterface $output
-     */
-    public function render(OutputInterface $output)
-    {
-        $description = $this->getDescription();
-        if (strlen($description) > 40) {
-            $description = substr($description, 0, 37) . '...';
-        }
-
-        $table = new Table($output);
-        $table->addRows(
-            [
-                ['ID', $this->getId()],
-//                ['Identifier', $this->getIdentifier()],
-//                ['Name', $this->getName()],
-                ['Description', $description],
-//                ['Parent', $this->getParent() ? $this->getParent()->getName() : '-'],
-//                ['Status', $this->getStatus()],
-//                ['Public', $this->isPublic() ? '<info>yes</info>' : '<comment>no</comment>'],
-//                ['Created On', $this->getCreatedOn()->format('Y-m-d H:i:s')],
-//                ['Updated On', $this->getUpdatedOn()->format('Y-m-d H:i:s')],
-            ]
-        );
-
-        $table->render();
+        return $this->ticketData;
     }
 
     /**
@@ -110,9 +81,7 @@ class Ticket
      */
     public function getId()
     {
-        return isset($this->ticketData['id'])
-            ? (int)$this->ticketData['id']
-            : null;
+        return $this->getIntegerOrNull('id');
     }
 
     /**
@@ -126,33 +95,27 @@ class Ticket
     }
 
     /**
-     * @return mixed|null
+     * @return string|null
      */
     public function getTracker()
     {
-        return isset($this->ticketData['tracker']) && !empty($this->ticketData['tracker'])
-            ? $this->ticketData['tracker']['name']
-            : null;
+        return $this->getStringOrNull('tracker', 'name');
     }
 
     /**
-     * @return mixed|null
+     * @return string|null
      */
     public function getStatus()
     {
-        return isset($this->ticketData['status']) && !empty($this->ticketData['status'])
-            ? $this->ticketData['status']['name']
-            : null;
+        return $this->getStringOrNull('status', 'name');
     }
 
     /**
-     * @return mixed|null
+     * @return string|null
      */
     public function getPriority()
     {
-        return isset($this->ticketData['priority']) && !empty($this->ticketData['priority'])
-            ? $this->ticketData['priority']['name']
-            : null;
+        return $this->getStringOrNull('priority', 'name');
     }
 
     /**
@@ -180,9 +143,7 @@ class Ticket
      */
     public function getSubject()
     {
-        return isset($this->ticketData['subject'])
-            ? (string)$this->ticketData['subject']
-            : null;
+        return $this->getStringOrNull('subject');
     }
 
     /**
@@ -190,9 +151,7 @@ class Ticket
      */
     public function getDescription()
     {
-        return isset($this->ticketData['description'])
-            ? (string)$this->ticketData['description']
-            : null;
+        return $this->getStringOrNull('description');
     }
 
     /**
@@ -200,9 +159,7 @@ class Ticket
      */
     public function getStartDate()
     {
-        return isset($this->ticketData['start_date'])
-            ? new \DateTime($this->ticketData['start_date'])
-            : null;
+        return $this->getDateTimeOrNull('start_date');
     }
 
     /**
@@ -210,9 +167,7 @@ class Ticket
      */
     public function getDueDate()
     {
-        return isset($this->ticketData['due_date'])
-            ? new \DateTime($this->ticketData['due_date'])
-            : null;
+        return $this->getDateTimeOrNull('due_date');
     }
 
     /**
@@ -220,9 +175,7 @@ class Ticket
      */
     public function getCreatedOn()
     {
-        return isset($this->ticketData['created_on'])
-            ? new \DateTime($this->ticketData['created_on'])
-            : null;
+        return $this->getDateTimeOrNull('created_on');
     }
 
     /**
@@ -230,9 +183,7 @@ class Ticket
      */
     public function getUpdatedOn()
     {
-        return isset($this->ticketData['updated_on'])
-            ? new \DateTime($this->ticketData['updated_on'])
-            : null;
+        return $this->getDateTimeOrNull('updated_on');
     }
 
     /**
@@ -240,9 +191,7 @@ class Ticket
      */
     public function getDoneRatio()
     {
-        return isset($this->ticketData['done_ratio'])
-            ? (int)$this->ticketData['done_ratio']
-            : null;
+        return $this->getIntegerOrNull('done_ratio');
     }
 
     /**
@@ -250,8 +199,6 @@ class Ticket
      */
     public function getEstimatedHours()
     {
-        return isset($this->ticketData['estimated_hours'])
-            ? (float)$this->ticketData['estimated_hours']
-            : null;
+        return $this->getFloatOrNull('estimated_hours');
     }
 }

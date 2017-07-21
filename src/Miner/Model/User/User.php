@@ -8,7 +8,12 @@
 
 namespace Miner\Model\User;
 
-class User
+use Miner\Model\AbstractModel;
+
+/**
+ * Class User
+ */
+class User extends AbstractModel
 {
     /**
      * @var array
@@ -22,18 +27,23 @@ class User
      */
     public function __construct(array $userdata = [])
     {
-        $this->setUserdata($userdata);
+        $this->setModelData($userdata);
     }
 
     /**
-     * @param array $userdata
-     *
-     * @return $this
+     * @param array $data
      */
-    public function setUserdata(array $userdata)
+    public function setModelData(array $data)
     {
-        $this->userdata = $userdata;
-        return $this;
+        $this->userdata = $data;
+    }
+
+    /**
+     * @return array
+     */
+    public function getModelData()
+    {
+        return $this->userdata;
     }
 
     /**
@@ -84,6 +94,7 @@ class User
         if (isset($this->userdata['name'])) {
             return (string)$this->userdata['name'];
         }
+
         return trim(sprintf('%s %s', $this->getFirstname(), $this->getLastname()));
     }
 

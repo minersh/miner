@@ -23,6 +23,7 @@ commands:
 
   "Miner\\Command\\Project\\ProjectContextInfoCommand":
     - "@miner.core.context"
+    - "@miner.renderer.project"
 
   "Miner\\Command\\Project\\ProjectContextDeleteCommand":
     - "@miner.core.context"

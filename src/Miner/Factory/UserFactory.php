@@ -28,7 +28,7 @@ class UserFactory
     public function createByUserdata(array $userdata)
     {
         $user = $this->create();
-        $user->setUserdata($userdata);
+        $user->setModelData($userdata);
         return $user;
     }
 }

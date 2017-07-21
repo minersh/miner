@@ -8,12 +8,13 @@
 
 namespace Miner\Model\Project;
 
-
 use Miner\Factory\ProjectFactory;
-use Symfony\Component\Console\Helper\Table;
-use Symfony\Component\Console\Output\OutputInterface;
+use Miner\Model\AbstractModel;
 
-class Project
+/**
+ * Class Project
+ */
+class Project extends AbstractModel
 {
     /**
      * @var ProjectFactory
@@ -33,46 +34,24 @@ class Project
      */
     public function __construct(ProjectFactory $projectFactory, array $projectData = [])
     {
-        $this->setProjectData($projectData);
+        $this->setModelData($projectData);
         $this->projectFactory = $projectFactory;
     }
 
     /**
-     * @param array $projectData
-     *
-     * @return $this
+     * @param array $data
      */
-    public function setProjectData(array $projectData = [])
+    public function setModelData(array $data)
     {
-        $this->projectData = $projectData;
-        return $this;
+        $this->projectData = $data;
     }
 
     /**
-     * @param OutputInterface $output
+     * @return array
      */
-    public function render(OutputInterface $output)
+    public function getModelData()
     {
-        $description = $this->getDescription();
-        if (strlen($description) > 40) {
-            $description = substr($description, 0, 37) . '...';
-        }
-
-        $table = new Table($output);
-        $table->addRows(
-            [
-                ['ID', $this->getId()],
-                ['Identifier', $this->getIdentifier()],
-                ['Name', $this->getName()],
-                ['Description', $description],
-                ['Parent', $this->getParent() ? $this->getParent()->getName() : '-'],
-                ['Status', $this->getStatus()],
-                ['Public', $this->isPublic() ? '<info>yes</info>' : '<comment>no</comment>'],
-                ['Created On', $this->getCreatedOn()->format('Y-m-d H:i:s')],
-                ['Updated On', $this->getUpdatedOn()->format('Y-m-d H:i:s')],
-            ]
-        );
-        $table->render();
+        return $this->projectData;
     }
 
     /**
@@ -80,9 +59,7 @@ class Project
      */
     public function getId()
     {
-        return isset($this->projectData['id'])
-            ? (int)$this->projectData['id']
-            : null;
+        return $this->getIntegerOrNull('id');
     }
 
     /**
@@ -90,9 +67,7 @@ class Project
      */
     public function getName()
     {
-        return isset($this->projectData['name'])
-            ? (string)$this->projectData['name']
-            : null;
+        return $this->getStringOrNull('name');
     }
 
     /**
@@ -100,9 +75,7 @@ class Project
      */
     public function getIdentifier()
     {
-        return isset($this->projectData['identifier'])
-            ? (string)$this->projectData['identifier']
-            : null;
+        return $this->getStringOrNull('identifier');
     }
 
     /**
@@ -110,9 +83,7 @@ class Project
      */
     public function getDescription()
     {
-        return isset($this->projectData['description'])
-            ? (string)$this->projectData['description']
-            : null;
+        return $this->getStringOrNull('description');
     }
 
     /**
@@ -120,9 +91,7 @@ class Project
      */
     public function getStatus()
     {
-        return isset($this->projectData['status'])
-            ? (int)$this->projectData['status']
-            : null;
+        return $this->getIntegerOrNull('status');
     }
 
     /**
@@ -130,9 +99,7 @@ class Project
      */
     public function isPublic()
     {
-        return isset($this->projectData['is_public'])
-            ? (bool)$this->projectData['is_public']
-            : false;
+        return $this->getBoolean('is_public');
     }
 
     /**
@@ -150,9 +117,7 @@ class Project
      */
     public function getCreatedOn()
     {
-        return isset($this->projectData['created_on'])
-            ? new \DateTime($this->projectData['created_on'])
-            : null;
+        return $this->getDateTimeOrNull('created_on');
     }
 
     /**
@@ -160,8 +125,6 @@ class Project
      */
     public function getUpdatedOn()
     {
-        return isset($this->projectData['updated_on'])
-            ? new \DateTime($this->projectData['updated_on'])
-            : null;
+        return $this->getDateTimeOrNull('updated_on');
     }
 }

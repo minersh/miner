@@ -8,11 +8,13 @@
 
 namespace Miner\Service\Redmine\Ticket;
 
-
 use Miner\Factory\TicketFactory;
 use Miner\Model\Ticket\Ticket;
 use Miner\Service\Redmine\RedmineSubApi;
 
+/**
+ * Class RedmineTicketApi
+ */
 class RedmineTicketApi extends RedmineSubApi
 {
     /**
@@ -102,9 +104,9 @@ class RedmineTicketApi extends RedmineSubApi
     public function save(Ticket $ticket)
     {
         if ($ticket->getId()) {
-            $resp = $this->getClient()->issue->update($ticket->getId(), $ticket->getTicketData());
+            $resp = $this->getClient()->issue->update($ticket->getId(), $ticket->getModelData());
         } else {
-            $resp = $this->getClient()->issue->create($ticket->getTicketData());
+            $resp = $this->getClient()->issue->create($ticket->getModelData());
         }
         /* @var \SimpleXMLElement $resp */
 
