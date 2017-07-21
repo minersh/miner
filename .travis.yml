@@ -13,12 +13,3 @@ install:
 
 script:
   - php vendor/bin/phing qa:run
-
-build:
-  tests:
-    override:
-      -
-        command: 'vendor/bin/phpunit --coverage-clover=some-file'
-          coverage:
-            file: 'some-file'
-            format: 'clover'
