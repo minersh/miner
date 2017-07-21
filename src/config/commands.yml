@@ -30,6 +30,7 @@ commands:
   "Miner\\Command\\Ticket\\TicketListCommand":
    - "@miner.core.context"
    - "@miner.redmine.api"
+   - "@miner.renderer.ticket.list"
 
   "Miner\\Command\\Ticket\\TicketCreateCommand":
    - "@miner.core.context"
