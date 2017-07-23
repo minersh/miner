@@ -106,7 +106,7 @@ class TicketDetailsCommand extends MinerCommand
 
         // load ticket by id
         $ticket = $ticketApi->getTicket($ticketId);
-        if (null === $ticket) {
+        if (!$ticket) {
             $output->writeln(
                 "<comment>The ticket with the ID %d could not be found or you aren't allowed to access it.</comment>",
                 $ticketId
