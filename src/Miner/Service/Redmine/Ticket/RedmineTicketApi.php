@@ -53,17 +53,28 @@ class RedmineTicketApi extends RedmineSubApi
             $params['project_id'] = $projectId;
         }
 
-        $params = array_merge(
+        $params = $this->mergeListParams($params, $limit, $offset);
+        $data = $this->getClient()->issue->all($params);
+
+        return $this->hydrate($data['issues']);
+    }
+
+    /**
+     * @param array $params
+     * @param int|null $limit
+     * @param int|null $offset
+     *
+     * @return array
+     */
+    private function mergeListParams(array $params, $limit = null, $offset = null)
+    {
+        return array_merge(
             [
                 'limit' => is_null($limit) ? 10000 : (int)$limit,
                 'offset' => is_null($offset) ? 0 : (int)$offset,
             ],
             $params
         );
-
-        $data = $this->getClient()->issue->all($params);
-
-        return $this->hydrate($data['issues']);
     }
 
     /**

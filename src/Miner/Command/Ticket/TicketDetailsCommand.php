@@ -9,6 +9,7 @@ namespace Miner\Command\Ticket;
 
 use Miner\Command\MinerCommand;
 use Miner\Exceptions\TicketException;
+use Miner\Model\Ticket\Ticket;
 use Miner\Service\Core\ContextService;
 use Miner\Service\Redmine\RedmineApi;
 use Miner\Service\Renderer\TicketRenderer;
@@ -114,6 +115,18 @@ class TicketDetailsCommand extends MinerCommand
             return 1;
         }
 
+        return $this->renderDetails($ticket, $input, $output);
+    }
+
+    /**
+     * @param \Miner\Model\Ticket\Ticket $ticket
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     *
+     * @return int
+     */
+    private function renderDetails(Ticket $ticket, InputInterface $input, OutputInterface $output)
+    {
         // only return the title of the ticket?
         if ($input->getOption(self::OPT_TITLE_ONLY)) {
             $output->write($ticket->getSubject());
