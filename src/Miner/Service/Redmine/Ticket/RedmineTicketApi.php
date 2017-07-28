@@ -8,11 +8,13 @@
 
 namespace Miner\Service\Redmine\Ticket;
 
-
 use Miner\Factory\TicketFactory;
 use Miner\Model\Ticket\Ticket;
 use Miner\Service\Redmine\RedmineSubApi;
 
+/**
+ * Class RedmineTicketApi
+ */
 class RedmineTicketApi extends RedmineSubApi
 {
     /**
@@ -51,17 +53,28 @@ class RedmineTicketApi extends RedmineSubApi
             $params['project_id'] = $projectId;
         }
 
-        $params = array_merge(
+        $params = $this->mergeListParams($params, $limit, $offset);
+        $data = $this->getClient()->issue->all($params);
+
+        return $this->hydrate($data['issues']);
+    }
+
+    /**
+     * @param array $params
+     * @param int|null $limit
+     * @param int|null $offset
+     *
+     * @return array
+     */
+    private function mergeListParams(array $params, $limit = null, $offset = null)
+    {
+        return array_merge(
             [
                 'limit' => is_null($limit) ? 10000 : (int)$limit,
                 'offset' => is_null($offset) ? 0 : (int)$offset,
             ],
             $params
         );
-
-        $data = $this->getClient()->issue->all($params);
-
-        return $this->hydrate($data['issues']);
     }
 
     /**
@@ -102,9 +115,9 @@ class RedmineTicketApi extends RedmineSubApi
     public function save(Ticket $ticket)
     {
         if ($ticket->getId()) {
-            $resp = $this->getClient()->issue->update($ticket->getId(), $ticket->getTicketData());
+            $resp = $this->getClient()->issue->update($ticket->getId(), $ticket->getModelData());
         } else {
-            $resp = $this->getClient()->issue->create($ticket->getTicketData());
+            $resp = $this->getClient()->issue->create($ticket->getModelData());
         }
         /* @var \SimpleXMLElement $resp */
 

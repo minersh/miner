@@ -48,7 +48,7 @@ class UserTest extends \PHPUnit_Framework_TestCase
         $user = new User($constructorData);
         $this->assertAttributeEquals($constructorData, 'userdata', $user);
 
-        $user->setUserdata($userdata);
+        $user->setModelData($userdata);
         $this->assertAttributeEquals($userdata, 'userdata', $user);
 
         if (!empty($userdata)) {

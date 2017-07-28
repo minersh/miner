@@ -28,7 +28,7 @@ class ProjectFactory
     public function createByProjectdata(array $projectdata)
     {
         $instance = $this->create();
-        $instance->setProjectData($projectdata);
+        $instance->setModelData($projectdata);
         return $instance;
     }
 }

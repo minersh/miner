@@ -23,6 +23,7 @@ commands:
 
   "Miner\\Command\\Project\\ProjectContextInfoCommand":
     - "@miner.core.context"
+    - "@miner.renderer.project"
 
   "Miner\\Command\\Project\\ProjectContextDeleteCommand":
     - "@miner.core.context"
@@ -30,11 +31,13 @@ commands:
   "Miner\\Command\\Ticket\\TicketListCommand":
    - "@miner.core.context"
    - "@miner.redmine.api"
+   - "@miner.renderer.ticket.list"
 
   "Miner\\Command\\Ticket\\TicketCreateCommand":
    - "@miner.core.context"
    - "@miner.redmine.api"
    - "@miner.factory.ticket"
+   - "@miner.renderer.ticket"
 
   "Miner\\Command\\Ticket\\TicketDetailsCommand":
    - "@miner.core.context"

@@ -110,3 +110,9 @@ services:
   #
   miner.renderer.ticket:
     class: "Miner\\Service\\Renderer\\TicketRenderer"
+
+  miner.renderer.ticket.list:
+    class: "Miner\\Service\\Renderer\\TicketListRenderer"
+
+  miner.renderer.project:
+    class: "Miner\\Service\\Renderer\\ProjectRenderer"

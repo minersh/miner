@@ -8,7 +8,9 @@
 
 namespace Miner\Exceptions;
 
-
+/**
+ * Class RegistryException
+ */
 class RegistryException extends \Exception
 {
     /**
