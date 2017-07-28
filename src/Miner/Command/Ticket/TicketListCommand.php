@@ -11,11 +11,14 @@ namespace Miner\Command\Ticket;
 use Miner\Command\MinerCommand;
 use Miner\Service\Core\ContextService;
 use Miner\Service\Redmine\RedmineApi;
-use Symfony\Component\Console\Helper\Table;
+use Miner\Service\Renderer\TicketListRenderer;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Class TicketListCommand
+ */
 class TicketListCommand extends MinerCommand
 {
     const OPT_PROJECT = 'project';
@@ -36,16 +39,26 @@ class TicketListCommand extends MinerCommand
     private $contextService;
 
     /**
+     * @var \Miner\Service\Renderer\TicketListRenderer
+     */
+    private $ticketListRenderer;
+
+    /**
      * ProjectListCommand constructor.
      *
      * @param ContextService $contextService
      * @param RedmineApi $redmineApi
+     * @param \Miner\Service\Renderer\TicketListRenderer $ticketListRenderer
      */
-    public function __construct(ContextService $contextService, RedmineApi $redmineApi)
-    {
+    public function __construct(
+        ContextService $contextService,
+        RedmineApi $redmineApi,
+        TicketListRenderer $ticketListRenderer
+    ) {
         parent::__construct(null);
         $this->contextService = $contextService;
         $this->redmineApi = $redmineApi;
+        $this->ticketListRenderer = $ticketListRenderer;
     }
 
     /**
@@ -105,12 +118,41 @@ class TicketListCommand extends MinerCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $currentUserId = null;
+        // get the current user context
         $contextUser = $this->contextService->getUser();
+        $currentUserId = null;
         if ($contextUser) {
             $currentUserId = $contextUser->getId();
         }
 
+        // get the user context for the list renadering
+        $userId = $this->getUserContext($input, $currentUserId);
+
+        // get the project context
+        $projectId = $this->getProjectContext($input);
+
+        // get the tickets
+        $tickets = $this->redmineApi->getTicketApi()->getList($userId, $projectId);
+
+        // render the list
+        $this->ticketListRenderer->render(
+            $tickets,
+            $currentUserId,
+            $input->getOption(self::OPT_NO_SUBJECT_TRUNCATE),
+            $output
+        );
+
+        return 0;
+    }
+
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param int|null $currentUserId
+     *
+     * @return int|null
+     */
+    private function getUserContext(InputInterface $input, int $currentUserId = null)
+    {
         $userId = (int)$input->getOption(self::OPT_USER);
         if ($userId < 1) {
             if ($input->getOption(self::OPT_USER_IGNORE) || $input->getOption(self::OPT_ALL)) {
@@ -120,6 +162,16 @@ class TicketListCommand extends MinerCommand
             }
         }
 
+        return $userId;
+    }
+
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     *
+     * @return int|null
+     */
+    private function getProjectContext(InputInterface $input)
+    {
         $projectId = (int)$input->getOption(self::OPT_PROJECT);
         if ($projectId < 1) {
             if ($input->getOption(self::OPT_PROJECT_IGNORE) || $input->getOption(self::OPT_ALL)) {
@@ -132,55 +184,6 @@ class TicketListCommand extends MinerCommand
             }
         }
 
-        $tickets = $this->redmineApi->getTicketApi()->getList($userId, $projectId);
-
-        $table = new Table($output);
-        $table->setHeaders(
-            [
-                'ID',
-                'Ticket',
-                'Assignee',
-                'Status',
-                'Priority',
-                'Project',
-                'Project ID',
-            ]
-        );
-        foreach ($tickets as $ticket) {
-            $project = $ticket->getProject();
-            $assignedUser = $ticket->getAssignedTo();
-
-            if ($assignedUser) {
-                if ($assignedUser->getId() == $currentUserId) {
-                    $assignedUserName = '<comment>' . $assignedUser->getName() . '</comment>';
-                } else {
-                    $assignedUserName = $assignedUser->getName();
-                }
-            } else {
-                $assignedUserName = '-';
-            }
-
-            $subject = $ticket->getSubject();
-            if (!$input->getOption(self::OPT_NO_SUBJECT_TRUNCATE)) {
-                if (strlen($subject) > 30) {
-                    $subject = substr($subject, 0, 27) . '...';
-                }
-            }
-
-            $table->addRow(
-                [
-                    $ticket->getId(),
-                    $subject,
-                    $assignedUserName,
-                    $ticket->getStatus(),
-                    $ticket->getPriority(),
-                    $project->getName(),
-                    $project->getId(),
-                ]
-            );
-        }
-        $table->render();
-
-        return 0;
+        return $projectId;
     }
 }

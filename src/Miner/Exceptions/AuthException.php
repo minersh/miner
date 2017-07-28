@@ -24,6 +24,6 @@ class AuthException extends \Exception
      */
     public static function badApiToken()
     {
-        return new static("Cour API token is invalid. Please re-login and try again!");
+        return new static("Your API token is invalid. Please re-login and try again!");
     }
 }

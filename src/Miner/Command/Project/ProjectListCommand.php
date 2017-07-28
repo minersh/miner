@@ -95,13 +95,7 @@ class ProjectListCommand extends MinerCommand
                 'Public',
             ];
             foreach ($projects as $project) {
-                $rows[] = [
-                    $project->getId(),
-                    $project->getIdentifier(),
-                    $project->getName(),
-                    $project->getParent() ? $project->getParent()->getName() : '-',
-                    $project->isPublic() ? '<info>yes</info>' : '<comment>no</comment>',
-                ];
+                $rows[] = $this->renderProjectRows($project);
             }
         } else {
             $headers = [
@@ -109,14 +103,32 @@ class ProjectListCommand extends MinerCommand
                 'Project',
             ];
             foreach ($projects as $project) {
-                $rows[] = [$project->getId(), $project->getName()];
+                $rows[] = [
+                    $project->getId(),
+                    $project->getName(),
+                ];
             }
         }
 
         $table = new Table($output);
-        $table
-            ->setHeaders($headers)
-            ->setRows($rows)
-            ->render();
+        $table->setHeaders($headers);
+        $table->setRows($rows);
+        $table->render();
+    }
+
+    /**
+     * @param \Miner\Model\Project\Project $project
+     *
+     * @return array
+     */
+    private function renderProjectRows(Project $project)
+    {
+        return [
+            $project->getId(),
+            $project->getIdentifier(),
+            $project->getName(),
+            $project->getParent() ? $project->getParent()->getName() : '-',
+            $project->isPublic() ? '<info>yes</info>' : '<comment>no</comment>',
+        ];
     }
 }

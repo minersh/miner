@@ -61,11 +61,7 @@ class AuthService
     {
         if (!$this->currentUser) {
             $data = $this->environmentService->getUserData();
-            if (!isset($data['userdata'])
-                || empty($data['userdata'])
-                || !isset($data['realmurl'])
-                || empty($data['realmurl'])
-            ) {
+            if (!$data) {
                 throw AuthException::noUserConfigured();
             }
             if (!$this->loginWithToken($data['realmurl'], $data['userdata']['api_key'])) {

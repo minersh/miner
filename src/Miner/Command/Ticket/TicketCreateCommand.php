@@ -14,7 +14,7 @@ use Miner\Exceptions\UserException;
 use Miner\Factory\TicketFactory;
 use Miner\Service\Core\ContextService;
 use Miner\Service\Redmine\RedmineApi;
-use Symfony\Component\Console\Helper\Table;
+use Miner\Service\Renderer\TicketRenderer;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -49,18 +49,29 @@ class TicketCreateCommand extends MinerCommand
     private $ticketFactory;
 
     /**
+     * @var \Miner\Service\Renderer\TicketRenderer
+     */
+    private $ticketRenderer;
+
+    /**
      * ProjectListCommand constructor.
      *
      * @param ContextService $contextService
      * @param RedmineApi $redmineApi
      * @param TicketFactory $ticketFactory
+     * @param \Miner\Service\Renderer\TicketRenderer $ticketRenderer
      */
-    public function __construct(ContextService $contextService, RedmineApi $redmineApi, TicketFactory $ticketFactory)
-    {
+    public function __construct(
+        ContextService $contextService,
+        RedmineApi $redmineApi,
+        TicketFactory $ticketFactory,
+        TicketRenderer $ticketRenderer
+    ) {
         parent::__construct(null);
         $this->contextService = $contextService;
         $this->redmineApi = $redmineApi;
         $this->ticketFactory = $ticketFactory;
+        $this->ticketRenderer = $ticketRenderer;
     }
 
     /**
@@ -71,15 +82,30 @@ class TicketCreateCommand extends MinerCommand
         $this
             ->setName('ticket:create')
             ->setAliases(['tc'])
-            ->addOption(self::OPT_PROJECT, 'p', InputOption::VALUE_OPTIONAL, 'Project ID')
-            ->addOption(self::OPT_USER, 'u', InputOption::VALUE_OPTIONAL, 'Assigned user ID')
+            ->addOption(
+                self::OPT_PROJECT,
+                'p',
+                InputOption::VALUE_OPTIONAL,
+                'Project ID'
+            )
+            ->addOption(
+                self::OPT_USER,
+                'u',
+                InputOption::VALUE_OPTIONAL,
+                'Assigned user ID'
+            )
             ->addOption(
                 self::OPT_USER_UNASSIGNED,
                 null,
                 InputOption::VALUE_NONE,
                 'Do not assign the ticket to any user.'
             )
-            ->addOption(self::OPT_DESCRIPTION, 'd', InputOption::VALUE_OPTIONAL, 'Description')
+            ->addOption(
+                self::OPT_DESCRIPTION,
+                'd',
+                InputOption::VALUE_OPTIONAL,
+                'Description'
+            )
             ->addOption(
                 self::OPT_RESPONSE_IDONLY,
                 null,
@@ -89,7 +115,7 @@ class TicketCreateCommand extends MinerCommand
             ->setDescription(
                 "Creates a ticket within the specified project (or the current context if present)"
             );
-        
+
         $this->addArgumentConfiguration();
     }
 
@@ -113,6 +139,43 @@ class TicketCreateCommand extends MinerCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        // get the project
+        $project = $this->getProjectForTicket($input);
+
+        // collect ticket informations
+        $ticketData = [
+            'subject' => (string)$input->getArgument(self::ARG_SUBJECT),
+            'description' => (string)$input->getOption(self::OPT_DESCRIPTION),
+            'project_id' => (int)$project->getId(),
+        ];
+
+        // assign a user?
+        $user = $this->getUserForTicket($input);
+        if ($user) {
+            $ticketData['assigned_to_id'] = $user->getId();
+        }
+
+        // create the ticket
+        $ticket = $this->createTicket($ticketData);
+
+        // return just the ID or render the whole ticket?
+        if ($input->getOption(self::OPT_RESPONSE_IDONLY)) {
+            $output->writeln($ticket->getId());
+        } else {
+            $this->ticketRenderer->render($ticket, $output);
+        }
+
+        return 0;
+    }
+
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     *
+     * @return \Miner\Model\Project\Project
+     * @throws \Miner\Exceptions\ProjectException
+     */
+    private function getProjectForTicket(InputInterface $input)
+    {
         $projectId = (int)$input->getOption(self::OPT_PROJECT);
         if ($projectId < 1) {
             $contextProject = $this->contextService->getProject();
@@ -120,6 +183,7 @@ class TicketCreateCommand extends MinerCommand
                 $projectId = $contextProject->getId();
             }
         }
+
         $project = $this->redmineApi
             ->getProjectApi()
             ->getProject($projectId);
@@ -127,16 +191,40 @@ class TicketCreateCommand extends MinerCommand
             throw ProjectException::noSuchProject();
         }
 
+        return $project;
+    }
+
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     *
+     * @return bool|\Miner\Model\User\User|null
+     * @throws \Miner\Exceptions\UserException
+     */
+    private function getUserForTicket(InputInterface $input)
+    {
         $contextUser = $this->contextService->getUser();
 
         $userId = (int)$input->getOption(self::OPT_USER);
         if ($userId < 1) {
             $userId = null;
             if (!$input->getOption(self::OPT_USER_UNASSIGNED) && $contextUser) {
-                $userId = $contextUser->getId();
+                $userId = (int)$contextUser->getId();
             }
         }
 
+        $user = $this->loadUser($userId);
+
+        return $user;
+    }
+
+    /**
+     * @param int $userId
+     *
+     * @return bool|\Miner\Model\User\User|null
+     * @throws \Miner\Exceptions\UserException
+     */
+    private function loadUser(int $userId)
+    {
         $user = false;
         if ($userId) {
             $user = $this->redmineApi
@@ -147,15 +235,17 @@ class TicketCreateCommand extends MinerCommand
             }
         }
 
-        $ticketData = [
-            'subject' => $input->getArgument(self::ARG_SUBJECT),
-            'description' => ($input->getOption(self::OPT_DESCRIPTION) ?: ''),
-            'project_id' => $project->getId(),
-        ];
-        if ($user) {
-            $ticketData['assigned_to_id'] = $user->getId();
-        }
+        return $user;
+    }
 
+    /**
+     * @param array $ticketData
+     *
+     * @return \Miner\Model\Ticket\Ticket|null
+     * @throws \Miner\Exceptions\TicketException
+     */
+    private function createTicket(array $ticketData)
+    {
         $ticket = $this->redmineApi->getTicketApi()->save(
             $this->ticketFactory->createByTicketdata($ticketData)
         );
@@ -164,31 +254,6 @@ class TicketCreateCommand extends MinerCommand
             throw TicketException::creationFailed();
         }
 
-        if ($input->getOption(self::OPT_RESPONSE_IDONLY)) {
-
-            $output->writeln($ticket->getId());
-
-        } else {
-            $table = new Table($output);
-            $table->setHeaders(
-                [
-                    'ID',
-                    'Project',
-                    'Subject',
-                    'Assignee',
-                ]
-            );
-            $table->addRow(
-                [
-                    $ticket->getId(),
-                    $ticket->getProject()->getName(),
-                    $ticket->getSubject(),
-                    $ticket->getAssignedTo()->getName(),
-                ]
-            );
-            $table->render();
-        }
-
-        return 0;
+        return $ticket;
     }
 }

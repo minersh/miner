@@ -52,13 +52,7 @@ class Test extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             sprintf(
-                "\r\n" .
-                "\r\n    _______ _____ __   _ _______  ______   _______ _     _" .
-                "\r\n    |  |  |   |   | \\  | |______ |_____/   |______ |_____|" .
-                "\r\n    |  |  | __|__ |  \\_| |______ |    \\_ . ______| |     |" .
-                "\r\n" .
-                "\r\n" .
-                "\r\n<aside>Miner interactive shell v%s by Simon Schröer <http://miner.sh></aside>\r\n",
+                "<aside>Miner interactive shell v%s by Simon Schröer</aside>\r\n",
                 self::VERSION
             ),
             $method->invoke($this->shell)
